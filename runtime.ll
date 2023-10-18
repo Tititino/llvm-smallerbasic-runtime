@@ -21,9 +21,9 @@ define i1 @CheckType(%struct.Boxed* %value, i2 %expected) {
 	ret i1 %ret
 }
 
-;-----------
-; GETTERS --
-;-----------
+;-------------
+;-- GETTERS --
+;-------------
 ;----------------- extract a number from a box
 ; THESE FUNCTIONS DO NOT CHECK IF THE VALUE IS OF THE RIGHT KIND
 ; IT IS THE CALEE RESPONSABILITY
@@ -45,11 +45,11 @@ define i1 @GetBoolValue(%struct.Boxed* %value) {
 }
 
 ;----------------- extract a string from a box
-; declare i8* @GetStringValue(%struct.Boxed* %value)
+declare i8* @GetStringValue(%struct.Boxed* %value)
 
-;-----------
-; SETTERS --
-;-----------
+;-------------
+;-- SETTERS --
+;-------------
 define void @SetNumberValue(%struct.Boxed* %self, double %value) {
 	%type.ptr  = getelementptr %struct.Boxed, %struct.Boxed* %self, i32 0, i32 0	; extract the pointer to the bool from the struct
 	%value.ptr = getelementptr %struct.Boxed, %struct.Boxed* %self, i32 0, i32 1	; extract the pointer to the bool from the struct
@@ -75,7 +75,7 @@ define void @SetBoolValue(%struct.Boxed* %self, i1 %value) {
 }
 
 ;----------------------------------------------------------------------------------------------------
-;--------------- printf -----------------------------------------------------------------------------
+;--------------- PRINTF -----------------------------------------------------------------------------
 ;----------------------------------------------------------------------------------------------------
 @number.message = constant [4 x i8] c"%f\0A\00"
 @string.message = constant [4 x i8] c"%s\0A\00"
@@ -110,40 +110,33 @@ print.false:
 end:
 	ret void
 }
+;- END PRINTF -------------------------------------------------------------------
 
-define void @Add(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {
+;-ARITH OPERATIONS---------------------------------------------------------------
+#define ARITH_OP(name, op)		\
+define void @name(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {	NEWLINE\
+	%is.number.left  = call i1 @CheckType(%struct.Boxed* %left, NUMBER_TYPE)	NEWLINE\
+	%is.number.right = call i1 @CheckType(%struct.Boxed* %right, NUMBER_TYPE)	NEWLINE\
+	%left.float  = call double @GetNumberValue(%struct.Boxed* %left)		NEWLINE\
+	%right.float = call double @GetNumberValue(%struct.Boxed* %right)		NEWLINE\
+	%res.value = op double %left.float, %right.float				NEWLINE\
+	call void @SetNumberValue(%struct.Boxed* %res, double %res.value)		NEWLINE\
+	ret void									NEWLINE\
+}											NEWLINE
+
+ARITH_OP(Add, fadd)
+ARITH_OP(Sub, fsub)
+ARITH_OP(Mul, fmul)
+
+; !!! DIVISION BY ZERO RUNTIME EXCEPTION !!!
+define void @Div(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {
 	%is.number.left  = call i1 @CheckType(%struct.Boxed* %left, NUMBER_TYPE)
 	%is.number.right = call i1 @CheckType(%struct.Boxed* %right, NUMBER_TYPE)
 
 	%left.float  = call double @GetNumberValue(%struct.Boxed* %left)
 	%right.float = call double @GetNumberValue(%struct.Boxed* %right)
 
-	%res.value = fadd double %left.float, %right.float
-
-	call void @SetNumberValue(%struct.Boxed* %res, double %res.value)
-	ret void
-}
-
-define void @Sub(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {
-	%is.number.left  = call i1 @CheckType(%struct.Boxed* %left, NUMBER_TYPE)
-	%is.number.right = call i1 @CheckType(%struct.Boxed* %right, NUMBER_TYPE)
-
-	%left.float  = call double @GetNumberValue(%struct.Boxed* %left)
-	%right.float = call double @GetNumberValue(%struct.Boxed* %right)
-
-	%res.value = fsub double %left.float, %right.float
-	call void @SetNumberValue(%struct.Boxed* %res, double %res.value)
-	ret void
-}
-
-define void @Mul(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {
-	%is.number.left  = call i1 @CheckType(%struct.Boxed* %left, NUMBER_TYPE)
-	%is.number.right = call i1 @CheckType(%struct.Boxed* %right, NUMBER_TYPE)
-
-	%left.float  = call double @GetNumberValue(%struct.Boxed* %left)
-	%right.float = call double @GetNumberValue(%struct.Boxed* %right)
-
-	%res.value = fmul double %left.float, %right.float
+	%res.value = fdiv double %left.float, %right.float
 	call void @SetNumberValue(%struct.Boxed* %res, double %res.value)
 	ret void
 }
@@ -155,26 +148,59 @@ define i64 @Floor(%struct.Boxed* %value) {
 	%res.value = fptoui double %f.value to i64
 	ret i64 %res.value
 }
+;-END ARITH OPERATIONS-----------------------------------------------------------
 
-define void @main() {
-	%res = alloca %struct.Boxed
-	%left = alloca %struct.Boxed
-	%right = alloca %struct.Boxed
+;---------------- COMPARISONS ----------------------
+#define CMP_OP(name, op)	\
+define void @name(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) { 	NEWLINE\
+	%is.number.left = call i1 @CheckType(%struct.Boxed* %left, NUMBER_TYPE)		NEWLINE\
+	br i1 %is.number.left, label %number, label %string				NEWLINE\
+number:											NEWLINE\
+	%is.number.right = call i1 @CheckType(%struct.Boxed* %right, NUMBER_TYPE)	NEWLINE\
+	%f.value.left  = call double @GetNumberValue(%struct.Boxed* %left)		NEWLINE\
+	%f.value.right = call double @GetNumberValue(%struct.Boxed* %right)		NEWLINE\
+	%f.res = fcmp op double %f.value.left, %f.value.right				NEWLINE\
+	br label %end									NEWLINE\
+string:		; TODO, also otherwise in case of boolean				NEWLINE\
+	%s.res = and i1 0, 0								NEWLINE\
+	br label %end									NEWLINE\
+end:											NEWLINE\
+	%bool = phi i1 [%f.res, %number], [%s.res, %string]				NEWLINE\
+	call void @SetBoolValue(%struct.Boxed* %res, i1 %bool)				NEWLINE\
+	ret void									NEWLINE\
+}											NEWLINE
 
-	call void @SetNumberValue(%struct.Boxed* %left, double 1.0)
-	call void @SetNumberValue(%struct.Boxed* %right, double 2.0)
+CMP_OP(EQ,  oeq)
+CMP_OP(NEQ, one)
+CMP_OP(GEQ, oge)
+CMP_OP(LEQ, ole)
+CMP_OP(LT,  olt)
+CMP_OP(GT,  ogt)
+;---------------- END COMPARISONS -----------------------
 
-	call void @Add(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right)
+;-- BOOLEAN OPERATIONS ------------------------------------------------------------
+#define BOOL_OP(name, op) 	\
+define void @name(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {	NEWLINE\
+	%is.bool.left  = call i1 @CheckType(%struct.Boxed* %left, BOOL_TYPE)		NEWLINE\
+	%is.bool.right = call i1 @CheckType(%struct.Boxed* %right, BOOL_TYPE)		NEWLINE\
+	%bool.left  = call i1 @GetBoolValue(%struct.Boxed* %left)			NEWLINE\
+	%bool.right = call i1 @GetBoolValue(%struct.Boxed* %right)			NEWLINE\
+	%b.res = op i1 %bool.left, %bool.right						NEWLINE\
+	call void @SetBoolValue(%struct.Boxed* %res, i1 %b.res)				NEWLINE\
+	ret void									NEWLINE\
+}											NEWLINE
 
-	%f.value = call double @GetNumberValue(%struct.Boxed* %res)
-	call void @Print(%struct.Boxed* %res)
+BOOL_OP(And, and)
+BOOL_OP(Or, or)
+;-- END BOOLEAN OPERATIONS ------------------------------------------------------------
 
-	%b = alloca %struct.Boxed
+#define NEW_BOX_NO_INIT(name)	\
+%name = alloca %struct.Boxed								NEWLINE
 
-	call void @SetBoolValue(%struct.Boxed* %b, FALSE)
+#define NEW_BOX(name, val, type)	\
+%name = alloca %struct.Boxed								NEWLINE\
+call void @Set##type##Value(%struct.Boxed* %name, val)					NEWLINE
 
-	call void @Print(%struct.Boxed* %b)
-	ret void
-}
-
- 
+;--------------------------------------------------------------------------------
+;- END HEADER ~ BEGIN PROGRAM ---------------------------------------------------
+;--------------------------------------------------------------------------------
