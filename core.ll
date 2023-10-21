@@ -48,7 +48,7 @@ string:
 	%s.value = call i8* @_GET_STR_VALUE(%struct.Boxed* %from)
 	%s.len = call i32 @strlen(i8* %s.value)
 	%s.len.1 = add i32 %s.len, 1
-	%new.str = call i8* @malloc(i32 %s.len.1)
+	%new.str = call i8* @malloc(i32 %s.len.1)		; memory leak
 	call i8* @strcpy(i8* %new.str, i8* %s.value)
 	call void @_SET_STR_VALUE(%struct.Boxed* %to, i8* %new.str)
 	ret void

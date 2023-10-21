@@ -9,7 +9,7 @@
 
 
 define void @INPUT(%struct.Boxed* %this) {
-	%new.string = call i8* @malloc(i32 100)
+	%new.string = call i8* @malloc(i32 100)	; memory leak
 
 	call i8* @gets(i8* %new.string)		; deprecated i know
 
