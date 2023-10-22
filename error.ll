@@ -8,6 +8,7 @@
 @unknown.type.string   = constant [8 x i8] c"UNKNOWN\00"
 @type.error.message = constant [58 x i8] c"*** Runtime exception: expected %s, but got %s (line %d)\0A\00"
 @zero.div.message   = constant [54 x i8] c"*** Runtime exception: zero division error (line %d)\0A\00"
+@unknown.error      = constant [48 x i8] c"*** Runtime exception: unknown error (line %d)\0A\00"
 
 @line.number = global i32 0
 
@@ -36,6 +37,13 @@ unknown.type:
 print:
 	%msg = phi i8* [%number.msg, %number.type], [%str.msg, %str.type], [%bool.msg, %bool.type], [%unknown.msg, %unknown.type]
 	ret i8* %msg
+}
+
+define void @_UNKNOWN_ERROR() {
+	%line = load i32, i32* @line.number 
+	call i32 (i8*, ...) @printf(i8* getelementptr([47 x i8], [47 x i8]* @unknown.error, i32 0, i32 0), i32 %line)
+	call void @abort()
+	ret void	
 }
 
 define void @_CHECK_ZERO_DIV_E(%struct.Boxed* %value) {

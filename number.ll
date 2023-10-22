@@ -69,7 +69,7 @@ define void @DIV(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %righ
 }								
 
 define i64 @_FLOOR(%struct.Boxed* %value) {
-	%is.number = call i1 @_CHECK_TYPE(%struct.Boxed* %value, NUMBER_TYPE)
+	call void @_CHECK_TYPE_E(%struct.Boxed* %value, NUMBER_TYPE)
 	%f.value   = call double @_GET_NUM_VALUE(%struct.Boxed* %value)
 
 	%res.value = fptoui double %f.value to i64

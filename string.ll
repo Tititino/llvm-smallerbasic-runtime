@@ -27,6 +27,8 @@ define i8* @_GET_STR_VALUE(%struct.Boxed* %this) nounwind {
 }
 
 define void @CONCAT(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {
+	call void @_CHECK_TYPE_E(%struct.Boxed* %left, STR_TYPE)
+	call void @_CHECK_TYPE_E(%struct.Boxed* %right, STR_TYPE)
 	%left.string = call i8* @_GET_STR_VALUE(%struct.Boxed* %left)
 	%right.string = call i8* @_GET_STR_VALUE(%struct.Boxed* %right)
 

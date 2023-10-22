@@ -35,17 +35,15 @@ define i2 @_GET_TYPE(%struct.Boxed* %this) {
 }
 
 define void @COPY(%struct.Boxed* %to, %struct.Boxed* %from) {
-	%is.number = call i1 @_CHECK_TYPE(%struct.Boxed* %from, NUMBER_TYPE)
-
-	br i1 %is.number, label %number, label %not.number
-number:
+	%type = call i2 @_GET_TYPE(%struct.Boxed* %from)		
+	switch i2 %type, label %otherwise [ i2 0, label %number.type
+	                                         i2 1, label %string.type
+						 i2 2, label %bool.type   ]
+number.type:							
 	%f.value = call double @_GET_NUM_VALUE(%struct.Boxed* %from)
 	call void @_SET_NUMBER_VALUE(%struct.Boxed* %to, double %f.value)
 	ret void
-not.number:
-	%is.string = call i1 @_CHECK_TYPE(%struct.Boxed* %from, STR_TYPE)
-	br i1 %is.string, label %string, label %bool
-string:
+string.type:						
 	%s.value = call i8* @_GET_STR_VALUE(%struct.Boxed* %from)
 	%s.len = call i32 @strlen(i8* %s.value)
 	%s.len.1 = add i32 %s.len, 1
@@ -53,10 +51,13 @@ string:
 	call i8* @strcpy(i8* %new.str, i8* %s.value)
 	call void @_SET_STR_VALUE(%struct.Boxed* %to, i8* %new.str)
 	ret void
-bool:
+bool.type:										
 	%b.value = call i1 @_GET_BOOL_VALUE(%struct.Boxed* %from)
 	call void @_SET_BOOL_VALUE(%struct.Boxed* %to, i1 %b.value)
 	ret void
-}
+otherwise:
+	call void @_UNKNOWN_ERROR()	
+	ret void
+}											
 
 ;-00---- END CORE.LL -------------------------------------------------------------------------------;
