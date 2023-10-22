@@ -2,7 +2,7 @@
 RUNTIME = $(addsuffix .ll, core number bool string io math error)
 
 out.s: ${RUNTIME} main.ll
-	cat ${RUNTIME} separator.txt main.ll | cpp -xc -P -E - | sed 's/NEWLINE/\n/g' | llc > out.s
+	cat ${RUNTIME} separator.txt main.ll | cpp -xc -P -E - | sed 's/NEWLINE/\n/g' | llc -opaque-pointers > out.s
 
 out.ll : ${RUNTIME}
 	cat ${RUNTIME} | cpp -xc -P -E - | sed 's/NEWLINE/\n/g' > out.ll
@@ -12,7 +12,7 @@ out.ll : ${RUNTIME}
 # and manually invoking `as' is a pain in the ass
 out: out.s
 	clang out.s -o out
-	chmod +x runtime
+	chmod +x out
 
 all: out
 

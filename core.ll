@@ -9,10 +9,11 @@
 ; needed external functions
 declare i8* @malloc(i32)
 declare i32 @strlen(i8*)
+declare void @abort()
 declare i8* @strcpy(i8*, i8*)
 declare i8* @strcat(i8*, i8*)
 declare i32 @printf(i8* noalias nocapture, ...)
-declare i8* @gets(i8*)
+declare ptr @fgets(ptr noundef, i32 noundef, ptr noundef) 
 
 #define NEW_BOX_NO_INIT(name)	\
 %name = alloca %struct.Boxed					NEWLINE
@@ -21,16 +22,16 @@ declare i8* @gets(i8*)
 %name = alloca %struct.Boxed					NEWLINE\
 call void @_SET_##type##_VALUE(%struct.Boxed* %name, val)	NEWLINE
 
+
 %struct.Boxed = type {
 	i2,
 	i64
 }
 
-define i1 @_CHECK_TYPE(%struct.Boxed* %value, i2 %expected) {
-	%struct.type.ptr = getelementptr %struct.Boxed, %struct.Boxed* %value, i32 0, i32 0
+define i2 @_GET_TYPE(%struct.Boxed* %this) {
+	%struct.type.ptr = getelementptr %struct.Boxed, %struct.Boxed* %this, i32 0, i32 0
 	%type            = load i2, i2* %struct.type.ptr
-	%ret             = icmp eq i2 %type, %expected
-	ret i1 %ret
+	ret i2 %type
 }
 
 define void @COPY(%struct.Boxed* %to, %struct.Boxed* %from) {
@@ -38,7 +39,7 @@ define void @COPY(%struct.Boxed* %to, %struct.Boxed* %from) {
 
 	br i1 %is.number, label %number, label %not.number
 number:
-	%f.value = call double @_GET_NUMBER_VALUE(%struct.Boxed* %from)
+	%f.value = call double @_GET_NUM_VALUE(%struct.Boxed* %from)
 	call void @_SET_NUMBER_VALUE(%struct.Boxed* %to, double %f.value)
 	ret void
 not.number:

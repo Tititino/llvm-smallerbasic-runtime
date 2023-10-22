@@ -7,11 +7,13 @@
 @true.message   = constant [6 x i8] c"true\0A\00"
 @false.message  = constant [7 x i8] c"false\0A\00"
 
+@stdin = external global ptr, align 8
 
 define void @INPUT(%struct.Boxed* %this) {
 	%new.string = call i8* @malloc(i32 100)	; memory leak
 
-	call i8* @gets(i8* %new.string)		; deprecated i know
+  	%stdin = load ptr, ptr @stdin, align 8
+  	call ptr @fgets(ptr noundef %new.string, i32 100, ptr noundef %stdin)	; credo inserisca un newline alla fine della stringa
 
 	call void @_SET_STR_VALUE(%struct.Boxed* %this, i8* %new.string)
 	ret void
@@ -22,7 +24,7 @@ define void @OUTPUT(%struct.Boxed* %value) {
 
 	br i1 %is.number, label %number, label %not.number
 number:
-	%f.value = call double @_GET_NUMBER_VALUE(%struct.Boxed* %value)
+	%f.value = call double @_GET_NUM_VALUE(%struct.Boxed* %value)
 	call i32 (i8*, ...) @printf(i8* getelementptr([4 x i8], [4 x i8]* @number.message, i32 0, i32 0), double %f.value)		
 	ret void
 not.number:
