@@ -25,21 +25,21 @@ declare ptr @fgets(ptr noundef, i32 noundef, ptr noundef)
 call void @_SET_##type##_VALUE(%struct.Boxed* %name, val)	NEWLINE
 
 %struct.Boxed = type {
-	i2,
+	TYPE_TYPE,	
 	i64
 }
 
-define i2 @_GET_TYPE(%struct.Boxed* %this) {
+define TYPE_TYPE @_GET_TYPE(%struct.Boxed* %this) {
 	%struct.type.ptr = getelementptr %struct.Boxed, %struct.Boxed* %this, i32 0, i32 0
-	%type            = load i2, i2* %struct.type.ptr
-	ret i2 %type
+	%type            = load TYPE_TYPE, TYPE_TYPE* %struct.type.ptr
+	ret TYPE_TYPE %type
 }
 
 define void @_COPY(%struct.Boxed* %to, %struct.Boxed* %from) {
-	%type = call i2 @_GET_TYPE(%struct.Boxed* %from)		
-	switch i2 %type, label %otherwise [ NUM_TYPE, 	label %number.type
-	                                    STR_TYPE,   label %string.type
-					    BOOL_TYPE,  label %bool.type   ]
+	%type = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %from)		
+	switch TYPE_TYPE %type, label %otherwise [ NUM_TYPE, 	label %number.type
+	                 	                   STR_TYPE,   label %string.type
+					  	   BOOL_TYPE,  label %bool.type   ]
 number.type:							
 	%f.value = call double @_GET_NUM_VALUE(%struct.Boxed* %from)
 	call void @_SET_NUMBER_VALUE(%struct.Boxed* %to, double %f.value)

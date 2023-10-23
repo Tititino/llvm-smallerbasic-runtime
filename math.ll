@@ -13,6 +13,7 @@ DECLARE_MATH_EXT_FUNC(sqrt)
 
 #define MATH_FUNC(name, op) 	\
 define void @Math.name(%struct.Boxed* %res, %struct.Boxed* %value) {		NEWLINE\
+	call void @_CHECK_TYPE_E(%struct.Boxed* %value, NUM_TYPE)		NEWLINE\
 	%f.value.0 = call double @_GET_NUM_VALUE(%struct.Boxed* %value)		NEWLINE\
 	%f.value.1 = call double @llvm.op.f64(double %f.value.0)		NEWLINE\
 	call void @_SET_NUM_VALUE(%struct.Boxed* %res, double %f.value.1)	NEWLINE\

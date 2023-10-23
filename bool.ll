@@ -16,7 +16,7 @@ define void @_SET_BOOL_VALUE(%struct.Boxed* %self, i1 %value) {
 
 	%i.value = sext i1 %value to i64
 
-	store BOOL_TYPE, i2* %type.ptr
+	store BOOL_TYPE, TYPE_TYPE* %type.ptr
 	store i64 %i.value, i64* %value.ptr
 
 	ret void
@@ -24,9 +24,9 @@ define void @_SET_BOOL_VALUE(%struct.Boxed* %self, i1 %value) {
 
 #define CMP_OP(name, fop, op)	\
 define void @name(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) { 	NEWLINE\
-	%type.left = call i2 @_GET_TYPE(%struct.Boxed* %left)				NEWLINE\
-	switch i2 %type.left, label %otherwise [ i2 0, label %number.type		NEWLINE\
-	                                         i2 1, label %string.type ]		NEWLINE\
+	%type.left = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %left)			NEWLINE\
+	switch TYPE_TYPE%type.left, label %otherwise [ NUM_TYPE, label %number.type	NEWLINE\
+	                                               STR_TYPE, label %string.type ]	NEWLINE\
 number.type:										NEWLINE\
 	call void @_DEFAULT_IF_NULL(%struct.Boxed* %left, NUM_TYPE)			NEWLINE\
 	call void @_DEFAULT_IF_NULL(%struct.Boxed* %right, NUM_TYPE)			NEWLINE\

@@ -64,8 +64,8 @@ define void @_CHECK_TYPE_E(%struct.Boxed* %value, TYPE_TYPE %expected) {
 	%are.equal       = icmp eq TYPE_TYPE %type, %expected
 	br i1 %are.equal, label %end, label %throw.exception
 throw.exception:
-	%actual.str   = call i8* @_GET_TYPE_REPR(i2 %type)
-	%expected.str = call i8* @_GET_TYPE_REPR(i2 %expected)
+	%actual.str   = call i8* @_GET_TYPE_REPR(TYPE_TYPE %type)
+	%expected.str = call i8* @_GET_TYPE_REPR(TYPE_TYPE %expected)
 	%line = load i32, i32* @line.number 
 	call i32 (i8*, ...) @printf(i8* getelementptr([58 x i8], [58 x i8]* @type.error.message, i32 0, i32 0), i8* %expected.str, i8* %actual.str, i32 %line )		
 	call void @abort()
