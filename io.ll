@@ -20,7 +20,7 @@ define void @IO.ReadLine(%struct.Boxed* %this) {
 }
 
 define void @IO.WriteLine(%struct.Boxed* %value) {
-	%is.number = call i1 @_CHECK_TYPE(%struct.Boxed* %value, NUMBER_TYPE)
+	%is.number = call i1 @_CHECK_TYPE(%struct.Boxed* %value, NUM_TYPE)
 
 	br i1 %is.number, label %number, label %not.number
 number:

@@ -34,7 +34,7 @@ define void @name(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %rig
 	%left.float  = call double @_GET_NUM_VALUE(%struct.Boxed* %left)		NEWLINE\
 	%right.float = call double @_GET_NUM_VALUE(%struct.Boxed* %right)		NEWLINE\
 	%res.value = op double %left.float, %right.float				NEWLINE\
-	call void @_SET_NUMBER_VALUE(%struct.Boxed* %res, double %res.value)		NEWLINE\
+	call void @_SET_NUM_VALUE(%struct.Boxed* %res, double %res.value)		NEWLINE\
 	ret void									NEWLINE\
 }											NEWLINE
 
@@ -46,15 +46,29 @@ define void @UNARY_MINUS(%struct.Boxed* %res, %struct.Boxed* %value) {
 	call void @_DEFAULT_IF_NULL(%struct.Boxed* %value, NUM_TYPE)
 	call void @_CHECK_TYPE_E(%struct.Boxed* %value, NUM_TYPE)
 	%float = call double @_GET_NUM_VALUE(%struct.Boxed* %value)
-	%m.float = fsub double 0, %float
+	%m.float = fsub double 0.0, %float
 	call void @_SET_NUM_VALUE(%struct.Boxed* %res, double %m.float)
 	ret void
 }
 
 define void @OVERLOADED_PLUS(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {	
 	%type.left = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %left)
-	switch TYPE_TYPE %type.left, label %otherwise [ NUM_TYPE, label %number.type		
-	                                                STR_TYPE, label %string.type ]	
+	switch TYPE_TYPE %type.left, label %otherwise [ NULL_TYPE, label %null.type
+	                                                NUM_TYPE,  label %number.type		
+	                                                STR_TYPE,  label %string.type ]	
+null.type:
+	%type.right = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %right)
+	switch TYPE_TYPE %type.left, label %otherwise [ NUM_TYPE,  label %number.type.right		
+	                                                STR_TYPE,  label %string.type.right ]	
+number.type.right:
+	call void @_DEFAULT_IF_NULL(%struct.Boxed* %left, NUM_TYPE)
+	call void @PLUS(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right)
+	ret void
+string.type.right:
+	call void @_DEFAULT_IF_NULL(%struct.Boxed* %left, STR_TYPE)
+	call void @PLUS(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right)
+	ret void
+
 number.type:								
 	call void @_CHECK_TYPE_E(%struct.Boxed* %right, NUM_TYPE)			
 	call void @PLUS(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right)
@@ -65,6 +79,7 @@ string.type:
 	ret void
 otherwise:				
 	call void @_CHECK_TYPE_E(%struct.Boxed* %left, NUM_TYPE)			
+	call void @_CHECK_TYPE_E(%struct.Boxed* %right, NUM_TYPE)			
 	ret void								
 }
 
@@ -77,7 +92,7 @@ define void @DIV(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %righ
 	%left.float  = call double @_GET_NUM_VALUE(%struct.Boxed* %left)
 	%right.float = call double @_GET_NUM_VALUE(%struct.Boxed* %right)
 	%res.value = fdiv double %left.float, %right.float			
-	call void @_SET_NUMBER_VALUE(%struct.Boxed* %res, double %res.value)
+	call void @_SET_NUM_VALUE(%struct.Boxed* %res, double %res.value)
 	ret void							
 }								
 

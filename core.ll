@@ -8,6 +8,9 @@
 #define BOOL_TYPE	i2 3
 #define TYPE_TYPE	i2
 
+#define TRUE	i1 1
+#define FALSE	i1 0
+
 ; needed external functions
 declare i8* @malloc(i32)
 declare i32 @strlen(i8*)
@@ -42,7 +45,7 @@ define void @_COPY(%struct.Boxed* %to, %struct.Boxed* %from) {
 					  	   BOOL_TYPE,  label %bool.type   ]
 number.type:							
 	%f.value = call double @_GET_NUM_VALUE(%struct.Boxed* %from)
-	call void @_SET_NUMBER_VALUE(%struct.Boxed* %to, double %f.value)
+	call void @_SET_NUM_VALUE(%struct.Boxed* %to, double %f.value)
 	ret void
 string.type:						
 	%s.value = call i8* @_GET_STR_VALUE(%struct.Boxed* %from)
@@ -62,8 +65,8 @@ otherwise:
 }											
 
 define void @_DEFAULT_IF_NULL(%struct.Boxed* %this, TYPE_TYPE %type) {
-	%type = @_GET_TYPE(%struct.Boxed* %this)
-	%bool = icmp eq TYPE_TYPE %type, 0
+	%value.type = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %this)
+	%bool = icmp eq TYPE_TYPE %value.type, 0
 	br i1 %bool, label %is.null, label %end
 is.null:
 	switch TYPE_TYPE %type, label %end [ NUM_TYPE,  label %number.type		
