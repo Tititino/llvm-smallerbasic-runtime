@@ -2,9 +2,11 @@
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 ; Core functions and definitions								    ;
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
-#define NUMBER_TYPE	i2 0
-#define STR_TYPE	i2 1
-#define BOOL_TYPE	i2 2
+#define NULL_TYPE	i2 0
+#define NUM_TYPE	i2 1
+#define STR_TYPE	i2 2
+#define BOOL_TYPE	i2 3
+#define TYPE_TYPE	i2
 
 ; needed external functions
 declare i8* @malloc(i32)
@@ -22,7 +24,6 @@ declare ptr @fgets(ptr noundef, i32 noundef, ptr noundef)
 %name = alloca %struct.Boxed					NEWLINE\
 call void @_SET_##type##_VALUE(%struct.Boxed* %name, val)	NEWLINE
 
-
 %struct.Boxed = type {
 	i2,
 	i64
@@ -34,11 +35,11 @@ define i2 @_GET_TYPE(%struct.Boxed* %this) {
 	ret i2 %type
 }
 
-define void @COPY(%struct.Boxed* %to, %struct.Boxed* %from) {
+define void @_COPY(%struct.Boxed* %to, %struct.Boxed* %from) {
 	%type = call i2 @_GET_TYPE(%struct.Boxed* %from)		
-	switch i2 %type, label %otherwise [ i2 0, label %number.type
-	                                         i2 1, label %string.type
-						 i2 2, label %bool.type   ]
+	switch i2 %type, label %otherwise [ NUM_TYPE, 	label %number.type
+	                                    STR_TYPE,   label %string.type
+					    BOOL_TYPE,  label %bool.type   ]
 number.type:							
 	%f.value = call double @_GET_NUM_VALUE(%struct.Boxed* %from)
 	call void @_SET_NUMBER_VALUE(%struct.Boxed* %to, double %f.value)
@@ -59,5 +60,28 @@ otherwise:
 	call void @_UNKNOWN_ERROR()	
 	ret void
 }											
+
+define void @_DEFAULT_IF_NULL(%struct.Boxed* %this, TYPE_TYPE %type) {
+	%type = @_GET_TYPE(%struct.Boxed* %this)
+	%bool = icmp eq TYPE_TYPE %type, 0
+	br i1 %bool, label %is.null, label %end
+is.null:
+	switch TYPE_TYPE %type, label %end [ NUM_TYPE,  label %number.type		
+	                                     STR_TYPE,  label %string.type 
+					     BOOL_TYPE, label %bool.type ]		
+number.type:
+	call void @_SET_NUM_VALUE(%struct.Boxed* %this, double 0.0)
+	ret void
+string.type:
+	%empty = call i8* @malloc(i32 1)			; memory leak
+	store i8 0, i8* %empty
+	call void @_SET_STR_VALUE(%struct.Boxed* %this, i8* %empty)
+	ret void
+bool.type:
+	call void @_SET_STR_VALUE(%struct.Boxed* %this, FALSE)
+	ret void
+end:
+	ret void
+}
 
 ;-00---- END CORE.LL -------------------------------------------------------------------------------;

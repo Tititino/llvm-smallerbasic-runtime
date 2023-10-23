@@ -1,25 +1,28 @@
 
 RUNTIME = $(addsuffix .ll, core number bool string io math error)
+CPP = cpp
 
-out.s: ${RUNTIME} main.ll
-	cat ${RUNTIME} separator.txt main.ll | cpp -xc -P -E - | sed 's/NEWLINE/\n/g' | llc -opaque-pointers > out.s
+out.s: out/out.ll 
+	mkdir -p out/
+	llc -opaque-pointers out/out.ll -o out/out.s
 
-out.ll : ${RUNTIME}
-	cat ${RUNTIME} | cpp -xc -P -E - | sed 's/NEWLINE/\n/g' > out.ll
+out.ll : out/runtime.ll main.ll
+	mkdir -p out/
+	cat out/runtime.ll separator.txt main.ll  > out/out.ll
 
-# this exists because the compiler wants to know the 
-# filetype of the input and passing it from stdin does not work really well
-# and manually invoking `as' is a pain in the ass
+runtime.ll: ${RUNTIME}
+	mkdir -p out/
+	cat ${RUNTIME} | ${CPP} -xc -P -E - | sed 's/NEWLINE/\n/g' > out/runtime.ll
+
 out: out.s
-	clang out.s -o out
-	chmod +x out
+	mkdir -p out/
+	clang out/out.s -o out/out
+	chmod +x out/out
 
 all: out
 
 clean:
-	-rm out.ll
-	-rm out.s
-	-rm out
+	rm -rf out/
 
 .PHONY:	all clean
 

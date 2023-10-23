@@ -12,16 +12,16 @@
 
 @line.number = global i32 0
 
-define i1 @_CHECK_TYPE(%struct.Boxed* %value, i2 %expected) {
-	%type            = call i2 @_GET_TYPE(%struct.Boxed* %value)
-	%ret             = icmp eq i2 %type, %expected
+define i1 @_CHECK_TYPE(%struct.Boxed* %value, TYPE_TYPE %expected) {
+	%type            = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %value)
+	%ret             = icmp eq TYPE_TYPE %type, %expected
 	ret i1 %ret
 }
 
-define i8* @_GET_TYPE_REPR(i2 %type) {
-	switch i2 %type, label %unknown.type [ i2 0, label %number.type
-	                                       i2 1, label %str.type
-					       i2 2, label %bool.type ]
+define i8* @_GET_TYPE_REPR(TYPE_TYPE %type) {
+	switch TYPE_TYPE %type, label %unknown.type [ NUM_TYPE, label %number.type
+	                	                      STR_TYPE, label %str.type
+					       	      BOOL_TYPE, label %bool.type ]
 number.type:
 	%number.msg  = getelementptr [7 x i8], [7 x i8]* @number.type.string, i32 0, i32 0
 	br label %print
@@ -59,9 +59,9 @@ false:
 	ret void
 }
 
-define void @_CHECK_TYPE_E(%struct.Boxed* %value, i2 %expected) {
-	%type            = call i2 @_GET_TYPE(%struct.Boxed* %value)
-	%are.equal       = icmp eq i2 %type, %expected
+define void @_CHECK_TYPE_E(%struct.Boxed* %value, TYPE_TYPE %expected) {
+	%type            = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %value)
+	%are.equal       = icmp eq TYPE_TYPE %type, %expected
 	br i1 %are.equal, label %end, label %throw.exception
 throw.exception:
 	%actual.str   = call i8* @_GET_TYPE_REPR(i2 %type)

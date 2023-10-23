@@ -12,7 +12,7 @@ define void @_SET_STR_VALUE(%struct.Boxed* %self, i8* %value) nounwind {
 
 	%s.value = ptrtoint i8* %value to i64						; cast to a i64
 
-	store STR_TYPE, i2* %type.ptr							; insert the type in the result
+	store STR_TYPE, TYPE_TYPE* %type.ptr						; insert the type in the result
 	store i64 %s.value, i64* %value.ptr						; insert the value in the result
 
 	ret void
@@ -27,6 +27,8 @@ define i8* @_GET_STR_VALUE(%struct.Boxed* %this) nounwind {
 }
 
 define void @CONCAT(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {
+	call void @_DEFAULT_IF_NULL(%struct.Boxed* %left, STR_TYPE)
+	call void @_DEFAULT_IF_NULL(%struct.Boxed* %right, STR_TYPE)
 	call void @_CHECK_TYPE_E(%struct.Boxed* %left, STR_TYPE)
 	call void @_CHECK_TYPE_E(%struct.Boxed* %right, STR_TYPE)
 	%left.string = call i8* @_GET_STR_VALUE(%struct.Boxed* %left)

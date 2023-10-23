@@ -28,12 +28,16 @@ define void @name(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %rig
 	switch i2 %type.left, label %otherwise [ i2 0, label %number.type		NEWLINE\
 	                                         i2 1, label %string.type ]		NEWLINE\
 number.type:										NEWLINE\
-	call void @_CHECK_TYPE_E(%struct.Boxed* %right, NUMBER_TYPE)			NEWLINE\
+	call void @_DEFAULT_IF_NULL(%struct.Boxed* %left, NUM_TYPE)			NEWLINE\
+	call void @_DEFAULT_IF_NULL(%struct.Boxed* %right, NUM_TYPE)			NEWLINE\
+	call void @_CHECK_TYPE_E(%struct.Boxed* %right, NUM_TYPE)			NEWLINE\
 	%f.value.left  = call double @_GET_NUM_VALUE(%struct.Boxed* %left)		NEWLINE\
 	%f.value.right = call double @_GET_NUM_VALUE(%struct.Boxed* %right)		NEWLINE\
 	%f.res = fcmp fop double %f.value.left, %f.value.right				NEWLINE\
 	br label %end									NEWLINE\
 string.type:										NEWLINE\
+	call void @_DEFAULT_IF_NULL(%struct.Boxed* %left, STR_TYPE)			NEWLINE\
+	call void @_DEFAULT_IF_NULL(%struct.Boxed* %right, STR_TYPE)			NEWLINE\
 	call void @_CHECK_TYPE_E(%struct.Boxed* %right, STR_TYPE)			NEWLINE\
 	%left.str  = call i8* @_GET_STR_VALUE(%struct.Boxed* %left)			NEWLINE\
 	%right.str = call i8* @_GET_STR_VALUE(%struct.Boxed* %right)			NEWLINE\
@@ -42,7 +46,7 @@ string.type:										NEWLINE\
 	%s.res = icmp op i32 %len.left, %len.right					NEWLINE\
 	br label %end									NEWLINE\
 otherwise:										NEWLINE\
-	call void @_CHECK_TYPE_E(%struct.Boxed* %left, NUMBER_TYPE)			NEWLINE\
+	call void @_CHECK_TYPE_E(%struct.Boxed* %left, NUM_TYPE)			NEWLINE\
 	ret void									NEWLINE\
 end:											NEWLINE\
 	%bool = phi i1 [%f.res, %number.type], [%s.res, %string.type]			NEWLINE\
@@ -59,6 +63,8 @@ CMP_OP(GT,  ogt, sgt)
 
 #define BOOL_OP(name, op) 	\
 define void @name(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {	NEWLINE\
+	call void @_DEFAULT_IF_NULL(%struct.Boxed* %left, BOOL_TYPE)			NEWLINE\
+	call void @_DEFAULT_IF_NULL(%struct.Boxed* %right, BOOL_TYPE)			NEWLINE\
 	call void @_CHECK_TYPE_E(%struct.Boxed* %left, BOOL_TYPE)			NEWLINE\
 	call void @_CHECK_TYPE_E(%struct.Boxed* %right, BOOL_TYPE)			NEWLINE\
 	%bool.left  = call i1 @_GET_BOOL_VALUE(%struct.Boxed* %left)			NEWLINE\

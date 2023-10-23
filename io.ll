@@ -9,7 +9,7 @@
 
 @stdin = external global ptr, align 8
 
-define void @INPUT(%struct.Boxed* %this) {
+define void @IO.ReadLine(%struct.Boxed* %this) {
 	%new.string = call i8* @malloc(i32 100)	; memory leak
 
   	%stdin = load ptr, ptr @stdin, align 8
@@ -19,7 +19,7 @@ define void @INPUT(%struct.Boxed* %this) {
 	ret void
 }
 
-define void @OUTPUT(%struct.Boxed* %value) {
+define void @IO.WriteLine(%struct.Boxed* %value) {
 	%is.number = call i1 @_CHECK_TYPE(%struct.Boxed* %value, NUMBER_TYPE)
 
 	br i1 %is.number, label %number, label %not.number
