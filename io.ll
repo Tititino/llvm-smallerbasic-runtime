@@ -2,7 +2,7 @@
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; Wrappers to library calls for I/O
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-@number.message = constant [4 x i8] c"%f\0A\00"
+@number.message = constant [6 x i8] c"%.2f\0A\00"
 @string.message = constant [4 x i8] c"%s\0A\00"
 @true.message   = constant [6 x i8] c"true\0A\00"
 @false.message  = constant [7 x i8] c"false\0A\00"
@@ -26,7 +26,7 @@ define void @IO.WriteLine(%struct.Boxed* %null, %struct.Boxed* %value) {
 					       	      BOOL_TYPE, label %bool.type ]
 number.type:
 	%f.value = call double @_GET_NUM_VALUE(%struct.Boxed* %value)
-	call i32 (i8*, ...) @printf(i8* getelementptr([4 x i8], [4 x i8]* @number.message, i32 0, i32 0), double %f.value)		
+	call i32 (i8*, ...) @printf(i8* getelementptr([6 x i8], [6 x i8]* @number.message, i32 0, i32 0), double %f.value)		
 	ret void
 str.type:
 	%s.value = call i8* @_GET_STR_VALUE(%struct.Boxed* %value)
