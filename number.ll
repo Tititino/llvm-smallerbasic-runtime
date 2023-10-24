@@ -58,23 +58,21 @@ define void @OVERLOADED_PLUS(%struct.Boxed* %res, %struct.Boxed* %left, %struct.
 	                                                STR_TYPE,  label %string.type ]	
 null.type:
 	%type.right = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %right)
-	switch TYPE_TYPE %type.left, label %otherwise [ NUM_TYPE,  label %number.type.right		
-	                                                STR_TYPE,  label %string.type.right ]	
+	switch TYPE_TYPE %type.right, label %otherwise [ NUM_TYPE,  label %number.type.right		
+	                                                 STR_TYPE,  label %string.type.right ]	
 number.type.right:
 	call void @_DEFAULT_IF_NULL(%struct.Boxed* %left, NUM_TYPE)
 	call void @PLUS(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right)
 	ret void
 string.type.right:
 	call void @_DEFAULT_IF_NULL(%struct.Boxed* %left, STR_TYPE)
-	call void @PLUS(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right)
+	call void @CONCAT(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right)
 	ret void
 
 number.type:								
-	call void @_CHECK_TYPE_E(%struct.Boxed* %right, NUM_TYPE)			
 	call void @PLUS(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right)
 	ret void
 string.type:						
-	call void @_CHECK_TYPE_E(%struct.Boxed* %right, STR_TYPE)			
 	call void @CONCAT(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right)
 	ret void
 otherwise:				

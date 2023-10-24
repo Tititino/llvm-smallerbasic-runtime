@@ -19,29 +19,30 @@ define void @IO.ReadLine(%struct.Boxed* %this) {
 	ret void
 }
 
-define void @IO.WriteLine(%struct.Boxed* %value) {
-	%is.number = call i1 @_CHECK_TYPE(%struct.Boxed* %value, NUM_TYPE)
-
-	br i1 %is.number, label %number, label %not.number
-number:
+define void @IO.WriteLine(%struct.Boxed* %null, %struct.Boxed* %value) {
+	%type = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %value)
+	switch TYPE_TYPE %type, label %unknown.type [ NUM_TYPE, label %number.type
+	                	                      STR_TYPE, label %str.type
+					       	      BOOL_TYPE, label %bool.type ]
+number.type:
 	%f.value = call double @_GET_NUM_VALUE(%struct.Boxed* %value)
 	call i32 (i8*, ...) @printf(i8* getelementptr([4 x i8], [4 x i8]* @number.message, i32 0, i32 0), double %f.value)		
 	ret void
-not.number:
-	%is.string = call i1 @_CHECK_TYPE(%struct.Boxed* %value, STR_TYPE)
-	br i1 %is.string, label %string, label %bool
-string:
+str.type:
 	%s.value = call i8* @_GET_STR_VALUE(%struct.Boxed* %value)
 	call i32 (i8*, ...) @printf(i8* getelementptr([4 x i8], [4 x i8]* @string.message, i32 0, i32 0), i8* %s.value)
 	ret void
-bool:
+bool.type:
 	%b.value = call i1 @_GET_BOOL_VALUE(%struct.Boxed* %value)
 	br i1 %b.value, label %print.true, label %print.false
 print.true:
 	call i32 (i8*, ...) @printf(i8* getelementptr([6 x i8], [6 x i8]* @true.message, i32 0, i32 0))		
 	ret void
 print.false:
-	call i32 (i8*, ...) @printf(i8* getelementptr([7 x i8], [7 x i8]* @false.message, i32 0, i32 0))		
+	call i32 (i8*, ...) @printf(i8* getelementptr([7 x i8], [7 x i8]* @false.message, i32 0, i32 0))
+	ret void
+unknown.type:
+	call void @_UNKNOWN_ERROR()
 	ret void
 }
 ;-04---- END IO.LL ---------------------------------------------------------------------------------

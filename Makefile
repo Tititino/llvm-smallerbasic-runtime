@@ -14,9 +14,9 @@ out/runtime.ll: ${RUNTIME}
 	mkdir -p out/
 	cat ${RUNTIME} | ${CPP} -xc -P -E - | sed 's/NEWLINE/\n/g' > out/runtime.ll
 
-oyt/out: out/out.s
+out/out: out/out.s
 	mkdir -p out/
-	clang out/out.s -o out/out
+	clang -lm out/out.s -o out/out 
 	chmod +x out/out
 
 all: out/out

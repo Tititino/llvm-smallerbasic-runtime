@@ -81,7 +81,7 @@ string.type:
 	call void @_SET_STR_VALUE(%struct.Boxed* %this, i8* %empty)
 	ret void
 bool.type:
-	call void @_SET_STR_VALUE(%struct.Boxed* %this, FALSE)
+	call void @_SET_BOOL_VALUE(%struct.Boxed* %this, FALSE)
 	ret void
 end:
 	ret void
