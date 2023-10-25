@@ -63,6 +63,11 @@ bool.type:
 	call void @_SET_BOOL_VALUE(%struct.Boxed* %to, i1 %b.value)
 	ret void
 otherwise:
+	switch TYPE_TYPE %type, label %end [ ARRAY_TYPE, label %array.type ]
+array.type:
+	call void @_ARRAY_COPY_E()
+	ret void
+end:
 	call void @_UNKNOWN_ERROR()	
 	ret void
 }											

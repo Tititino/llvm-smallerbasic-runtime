@@ -62,7 +62,7 @@ define void @_SET_CONTENTS(%struct.Array* %this, %struct.Boxed* %new) {
 ;;;;
 
 define %struct.Array* @_GET_ARRAY(%struct.Boxed* %this) {
-	; call void @_DEFAULT_IF_NULL(%struct.Boxed* %this, ARRAY_TYPE)				
+	call void @_DEFAULT_IF_NULL(%struct.Boxed* %this, ARRAY_TYPE)				
 	; call void @_CHECK_TYPE_E(%struct.Boxed* %this, ARRAY_TYPE)
 	%arr.ptr = getelementptr %struct.Boxed, %struct.Boxed* %this, i32 0, i32 1
 	%i.arr = load i64, i64* %arr.ptr
@@ -72,7 +72,7 @@ define %struct.Array* @_GET_ARRAY(%struct.Boxed* %this) {
 }
 
 define %struct.Boxed* @_GET_ARRAY_ELEMENT(%struct.Boxed* %this, %struct.Boxed* %index) {
-	; call void @_DEFAULT_IF_NULL(%struct.Boxed* %this, ARRAY_TYPE)				
+	call void @_DEFAULT_IF_NULL(%struct.Boxed* %this, ARRAY_TYPE)				
 	; call void @_CHECK_TYPE_E(%struct.Boxed* %this, ARRAY_TYPE)
 
 	%i.index = call i32 @_FLOOR(%struct.Boxed* %index)
@@ -97,12 +97,11 @@ false:
 
 	%new.contents.bytes = call i8* @realloc(i8* %i8.ptr.arr, i32 %new.size)
 
-	; %new.contents = bitcast i8* %new.contents.bytes to %struct.Boxed**
-	; call void @_SET_CAPACITY(%struct.Array* %array, i32 %new.number.of.elements)
-	; call void @_SET_CONTENTS(%struct.Array* %array, %struct.Boxed** %new.contents)
-	; %ret = call %struct.Boxed* @_GET_ARRAY_ELEMENT(%struct.Boxed* %this, %struct.Boxed* %index)
-	; ret %struct.Boxed* %ret
-	ret %struct.Boxed* null
+	%new.contents = bitcast i8* %new.contents.bytes to %struct.Boxed**
+	call void @_SET_CAPACITY(%struct.Array* %array, i32 %new.number.of.elements)
+	call void @_SET_CONTENTS(%struct.Array* %array, %struct.Boxed* %new.contents)
+	%ret = call %struct.Boxed* @_GET_ARRAY_ELEMENT(%struct.Boxed* %this, %struct.Boxed* %index)
+	ret %struct.Boxed* %ret
 }
 
 ;-07---- END ARRAY.LL ------------------------------------------------------------------------------

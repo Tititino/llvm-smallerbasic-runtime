@@ -87,5 +87,20 @@ false:
 	ret void
 }
 
+@array.copy.msg = constant [75 x i8] c"*** Runtime exception: array copy (<arr> = <arr>) not supported (line %d)\0A\00"
+define void @_ARRAY_COPY_E() {
+	%line = load i32, i32* @line.number 
+	call i32 (i8*, ...) @printf(i8* getelementptr([75 x i8], [75 x i8]* @array.copy.msg, i32 0, i32 0), i32 %line )		
+	call void @abort()
+	ret void
+}
+
+@array.print.msg = constant [63 x i8] c"*** Runtime exception: array printing not supported (line %d)\0A\00"
+define void @_ARRAY_PRINT_E() {
+	%line = load i32, i32* @line.number 
+	call i32 (i8*, ...) @printf(i8* getelementptr([63 x i8], [63 x i8]* @array.print.msg, i32 0, i32 0), i32 %line )		
+	call void @abort()
+	ret void
+}
 
 ;-04---- END ERROR.LL ------------------------------------------------------------------------------
