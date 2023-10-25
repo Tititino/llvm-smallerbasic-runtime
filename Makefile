@@ -1,5 +1,5 @@
 
-RUNTIME = $(addsuffix .ll, core number bool string io math error)
+RUNTIME = $(addsuffix .ll, core number bool string io math error array)
 CPP = cpp
 
 out/out.s: out/out.ll 
@@ -16,7 +16,7 @@ out/runtime.ll: ${RUNTIME}
 
 out/out: out/out.s
 	mkdir -p out/
-	clang -lm out/out.s -o out/out 
+	clang -lm -g out/out.s -o out/out 
 	chmod +x out/out
 
 all: out/out

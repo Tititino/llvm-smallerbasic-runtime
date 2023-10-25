@@ -2,17 +2,20 @@
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
 ; Core functions and definitions								    ;
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~;
-#define NULL_TYPE	i2 0
-#define NUM_TYPE	i2 1
-#define STR_TYPE	i2 2
-#define BOOL_TYPE	i2 3
-#define TYPE_TYPE	i2
+#define TYPE_TYPE	i3
+#define NULL_TYPE	i3 0
+#define NUM_TYPE	i3 1
+#define STR_TYPE	i3 2
+#define BOOL_TYPE	i3 3
+#define ARRAY_TYPE	i3 4
+
 
 #define TRUE	i1 1
 #define FALSE	i1 0
 
 ; needed external functions
 declare i8* @malloc(i32)
+declare i8* @realloc(i8*, i32)
 declare i32 @strlen(i8*)
 declare void @abort()
 declare i8* @strcpy(i8*, i8*)
@@ -69,9 +72,11 @@ define void @_DEFAULT_IF_NULL(%struct.Boxed* %this, TYPE_TYPE %type) {
 	%bool = icmp eq TYPE_TYPE %value.type, 0
 	br i1 %bool, label %is.null, label %end
 is.null:
-	switch TYPE_TYPE %type, label %end [ NUM_TYPE,  label %number.type		
-	                                     STR_TYPE,  label %string.type 
-					     BOOL_TYPE, label %bool.type ]		
+	; for some reason if i add a fourth element to the switch i get a linking error that i am
+	; too dumb to fix
+	switch TYPE_TYPE %type, label %otherwise [ NUM_TYPE,   label %number.type		
+	                                           STR_TYPE,   label %string.type 
+					           BOOL_TYPE,  label %bool.type  ]
 number.type:
 	call void @_SET_NUM_VALUE(%struct.Boxed* %this, double 0.0)
 	ret void
@@ -82,6 +87,11 @@ string.type:
 	ret void
 bool.type:
 	call void @_SET_BOOL_VALUE(%struct.Boxed* %this, FALSE)
+	ret void
+otherwise:
+	switch TYPE_TYPE %type, label %end [ ARRAY_TYPE, label %array.type ]
+array.type:
+	call void @_EMPTY_ARRAY(%struct.Boxed* %this)	
 	ret void
 end:
 	ret void

@@ -74,5 +74,18 @@ end:
 	ret void
 }
 
+@negative.index.msg = constant [57 x i8] c"*** Runtime exception: %d is a negative index (line %d)\0A\00"
+define void @_CHECK_POSITIVE_INDEX_E(i32 %index) {
+	%is.negative = icmp slt i32 %index, 0
+	br i1 %is.negative, label %true, label %false
+true:
+	%line = load i32, i32* @line.number 
+	call i32 (i8*, ...) @printf(i8* getelementptr([57 x i8], [57 x i8]* @negative.index.msg, i32 0, i32 0), i32 %index, i32 %line)
+	call void @abort()
+	ret void
+false:
+	ret void
+}
+
 
 ;-04---- END ERROR.LL ------------------------------------------------------------------------------
