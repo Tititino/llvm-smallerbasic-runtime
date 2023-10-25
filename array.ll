@@ -73,7 +73,7 @@ define %struct.Array* @_GET_ARRAY(%struct.Boxed* %this) {
 
 define %struct.Boxed* @_GET_ARRAY_ELEMENT(%struct.Boxed* %this, %struct.Boxed* %index) {
 	call void @_DEFAULT_IF_NULL(%struct.Boxed* %this, ARRAY_TYPE)				
-	; call void @_CHECK_TYPE_E(%struct.Boxed* %this, ARRAY_TYPE)
+	call void @_CHECK_TYPE_E(%struct.Boxed* %this, ARRAY_TYPE)
 
 	%i.index = call i32 @_FLOOR(%struct.Boxed* %index)
 

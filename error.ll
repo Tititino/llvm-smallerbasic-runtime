@@ -2,13 +2,14 @@
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; Runtime error routines
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-@number.type.string = constant [7 x i8] c"NUMBER\00"
-@string.type.string = constant [7 x i8] c"STRING\00"
-@bool.type.string   = constant [5 x i8] c"BOOL\00"
-@unknown.type.string   = constant [8 x i8] c"UNKNOWN\00"
-@type.error.message = constant [58 x i8] c"*** Runtime exception: expected %s, but got %s (line %d)\0A\00"
-@zero.div.message   = constant [54 x i8] c"*** Runtime exception: zero division error (line %d)\0A\00"
-@unknown.error      = constant [48 x i8] c"*** Runtime exception: unknown error (line %d)\0A\00"
+@number.type.string  = constant [7 x i8]  c"NUMBER\00"
+@string.type.string  = constant [7 x i8]  c"STRING\00"
+@bool.type.string    = constant [5 x i8]  c"BOOL\00"
+@array.type.string   = constant [6 x i8]  c"ARRAY\00"
+@unknown.type.string = constant [8 x i8]  c"UNKNOWN\00"
+@type.error.message  = constant [58 x i8] c"*** Runtime exception: expected %s, but got %s (line %d)\0A\00"
+@zero.div.message    = constant [54 x i8] c"*** Runtime exception: zero division error (line %d)\0A\00"
+@unknown.error       = constant [48 x i8] c"*** Runtime exception: unknown error (line %d)\0A\00"
 
 @line.number = global i32 0
 
@@ -19,9 +20,9 @@ define i1 @_CHECK_TYPE(%struct.Boxed* %value, TYPE_TYPE %expected) {
 }
 
 define i8* @_GET_TYPE_REPR(TYPE_TYPE %type) {
-	switch TYPE_TYPE %type, label %unknown.type [ NUM_TYPE, label %number.type
-	                	                      STR_TYPE, label %str.type
-					       	      BOOL_TYPE, label %bool.type ]
+	switch TYPE_TYPE %type, label %otherwise [ NUM_TYPE, label %number.type
+	                	                   STR_TYPE, label %str.type
+					       	   BOOL_TYPE, label %bool.type ]
 number.type:
 	%number.msg  = getelementptr [7 x i8], [7 x i8]* @number.type.string, i32 0, i32 0
 	br label %print
@@ -31,11 +32,19 @@ str.type:
 bool.type:
 	%bool.msg    = getelementptr [5 x i8], [5 x i8]* @bool.type.string, i32 0, i32 0
 	br label %print
+otherwise:
+	switch TYPE_TYPE %type, label %unknown.type [ ARRAY_TYPE, label %array.type ]
+array.type:
+	%array.msg = getelementptr [7 x i8], [7 x i8]* @array.type.string, i32 0, i32 0
+	br label %end.otherwise
 unknown.type:
 	%unknown.msg = getelementptr [8 x i8], [8 x i8]* @unknown.type.string, i32 0, i32 0
+	br label %end.otherwise
+end.otherwise:
+	%otherwise.msg = phi i8* [%array.msg, %array.type], [%unknown.msg, %unknown.type]
 	br label %print
 print:
-	%msg = phi i8* [%number.msg, %number.type], [%str.msg, %str.type], [%bool.msg, %bool.type], [%unknown.msg, %unknown.type]
+	%msg = phi i8* [%number.msg, %number.type], [%str.msg, %str.type], [%bool.msg, %bool.type], [%otherwise.msg, %end.otherwise]
 	ret i8* %msg
 }
 
