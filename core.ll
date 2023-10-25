@@ -43,7 +43,7 @@ define TYPE_TYPE @_GET_TYPE(%struct.Boxed* %this) {
 
 define void @_COPY(%struct.Boxed* %to, %struct.Boxed* %from) {
 	%type = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %from)		
-	switch TYPE_TYPE %type, label %otherwise [ NUM_TYPE, 	label %number.type
+	switch TYPE_TYPE %type, label %otherwise [ NUM_TYPE,   label %number.type
 	                 	                   STR_TYPE,   label %string.type
 					  	   BOOL_TYPE,  label %bool.type   ]
 number.type:							

@@ -72,21 +72,21 @@ define %struct.Array* @_GET_ARRAY(%struct.Boxed* %this) {
 }
 
 define %struct.Boxed* @_GET_ARRAY_ELEMENT(%struct.Boxed* %this, %struct.Boxed* %index) {
-	call void @_DEFAULT_IF_NULL(%struct.Boxed* %this, ARRAY_TYPE)				
-	call void @_CHECK_TYPE_E(%struct.Boxed* %this, ARRAY_TYPE)
+	call void @_DEFAULT_IF_NULL(%struct.Boxed* %this, ARRAY_TYPE)		; if (this is null) then default(this)	
+	call void @_CHECK_TYPE_E(%struct.Boxed* %this, ARRAY_TYPE)		; assert(this.type == ARRAY)
 
-	%i.index = call i32 @_FLOOR(%struct.Boxed* %index)
+	%i.index = call i32 @_FLOOR(%struct.Boxed* %index)			; i = floor(index)
 
-	call void @_CHECK_POSITIVE_INDEX_E(i32 %i.index)
+	call void @_CHECK_POSITIVE_INDEX_E(i32 %i.index)			; assert(i >= 0)
 
-	%array = call %struct.Array* @_GET_ARRAY(%struct.Boxed* %this)
-	%capacity = call i32 @_GET_CAPACITY(%struct.Array* %array)
-	%contents = call %struct.Boxed* @_GET_CONTENTS(%struct.Array* %array)
+	%array = call %struct.Array* @_GET_ARRAY(%struct.Boxed* %this)		; array = this.array
+	%capacity = call i32 @_GET_CAPACITY(%struct.Array* %array)		; capacity = array.capacity
+	%contents = call %struct.Boxed* @_GET_CONTENTS(%struct.Array* %array)	; contents = array.contents
  	
-	%is.smaller = icmp slt i32 %i.index, %capacity
-	br i1 %is.smaller, label %true, label %false
+	%is.smaller = icmp slt i32 %i.index, %capacity				; b = i < capacity
+	br i1 %is.smaller, label %true, label %false				; 
 true:
-	%struct.ptr = getelementptr %struct.Boxed*, %struct.Boxed** %contents, i32 %i.index
+	%struct.ptr = getelementptr %struct.Boxed, %struct.Boxed* %contents, i32 %i.index
 	ret %struct.Boxed* %struct.ptr
 false:
 	%i8.ptr.arr = bitcast %struct.Boxed* %contents to i8*
