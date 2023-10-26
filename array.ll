@@ -62,7 +62,7 @@ define void @_SET_CONTENTS(%struct.Array* %this, %struct.Boxed* %new) {
 
 define %struct.Array* @_GET_ARRAY(%struct.Boxed* %this) {
 	call void @_DEFAULT_IF_NULL(%struct.Boxed* %this, ARRAY_TYPE)				
-	; call void @_CHECK_TYPE_E(%struct.Boxed* %this, ARRAY_TYPE)
+	call void @_CHECK_TYPE_E(%struct.Boxed* %this, ARRAY_TYPE)
 	%arr.ptr = getelementptr %struct.Boxed, %struct.Boxed* %this, i32 0, i32 1
 	%i.arr = load i64, i64* %arr.ptr
 
