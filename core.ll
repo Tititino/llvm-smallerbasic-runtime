@@ -9,6 +9,8 @@
 #define BOOL_TYPE	i3 3
 #define ARRAY_TYPE	i3 4
 
+#define STRING_INPUT_BUF_SIZE	100
+
 
 #define TRUE	i1 1
 #define FALSE	i1 0
@@ -16,10 +18,11 @@
 ; needed external functions
 declare i8* @malloc(i32)
 declare i8* @realloc(i8*, i32)
-declare i32 @strlen(i8*)
 declare void @abort()
+declare i32 @strlen(i8*)
 declare i8* @strcpy(i8*, i8*)
 declare i8* @strcat(i8*, i8*)
+declare i32 @strcmp(i8*, i8*)
 declare i32 @printf(i8* noalias nocapture, ...)
 declare ptr @fgets(ptr noundef, i32 noundef, ptr noundef) 
 

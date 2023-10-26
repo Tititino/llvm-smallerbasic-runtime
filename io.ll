@@ -10,10 +10,14 @@
 @stdin = external global ptr, align 8
 
 define void @IO.ReadLine(%struct.Boxed* %this) {
-	%new.string = call i8* @malloc(i32 100)	; memory leak
+	%new.string = call i8* @malloc(i32 STRING_INPUT_BUF_SIZE)	; memory leak
 
   	%stdin = load ptr, ptr @stdin, align 8
-  	call ptr @fgets(ptr noundef %new.string, i32 100, ptr noundef %stdin)	; credo inserisca un newline alla fine della stringa
+  	call ptr @fgets(ptr noundef %new.string, i32 STRING_INPUT_BUF_SIZE, ptr noundef %stdin)	
+	%strlen.0 = call i32 @strlen(i8* %new.string)
+	%strlen.1 = sub i32 %strlen.0, 1
+	%last.char.ptr = getelementptr i8, i8* %new.string, i32 %strlen.1
+	store i8 0, i8* %last.char.ptr						; replace newline with null 
 
 	call void @_SET_STR_VALUE(%struct.Boxed* %this, i8* %new.string)
 	ret void

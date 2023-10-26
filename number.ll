@@ -52,23 +52,14 @@ define void @UNARY_MINUS(%struct.Boxed* %res, %struct.Boxed* %value) {
 }
 
 define void @OVERLOADED_PLUS(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {	
-	%type.left = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %left)
+	%type.left = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %left)				
 	switch TYPE_TYPE %type.left, label %otherwise [ NULL_TYPE, label %null.type
 	                                                NUM_TYPE,  label %number.type		
 	                                                STR_TYPE,  label %string.type ]	
-null.type:
+null.type:							
 	%type.right = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %right)
-	switch TYPE_TYPE %type.right, label %otherwise [ NUM_TYPE,  label %number.type.right		
-	                                                 STR_TYPE,  label %string.type.right ]	
-number.type.right:
-	call void @_DEFAULT_IF_NULL(%struct.Boxed* %left, NUM_TYPE)
-	call void @PLUS(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right)
-	ret void
-string.type.right:
-	call void @_DEFAULT_IF_NULL(%struct.Boxed* %left, STR_TYPE)
-	call void @CONCAT(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right)
-	ret void
-
+	switch TYPE_TYPE %type.right, label %otherwise [ NUM_TYPE,  label %number.type
+	                                                 STR_TYPE,  label %string.type ]	
 number.type:								
 	call void @PLUS(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right)
 	ret void

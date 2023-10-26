@@ -59,7 +59,6 @@ define void @_SET_CONTENTS(%struct.Array* %this, %struct.Boxed* %new) {
 	store %struct.Boxed* %new, %struct.Boxed** %array.ptr
 	ret void
 }
-;;;;
 
 define %struct.Array* @_GET_ARRAY(%struct.Boxed* %this) {
 	call void @_DEFAULT_IF_NULL(%struct.Boxed* %this, ARRAY_TYPE)				

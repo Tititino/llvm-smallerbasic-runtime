@@ -22,44 +22,49 @@ define void @_SET_BOOL_VALUE(%struct.Boxed* %self, i1 %value) {
 	ret void
 }
 
-#define CMP_OP(name, fop, op)	\
-define void @name(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) { 	NEWLINE\
-	%type.left = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %left)			NEWLINE\
-	switch TYPE_TYPE%type.left, label %otherwise [ NUM_TYPE, label %number.type	NEWLINE\
-	                                               STR_TYPE, label %string.type ]	NEWLINE\
-number.type:										NEWLINE\
-	call void @_DEFAULT_IF_NULL(%struct.Boxed* %left, NUM_TYPE)			NEWLINE\
-	call void @_DEFAULT_IF_NULL(%struct.Boxed* %right, NUM_TYPE)			NEWLINE\
-	call void @_CHECK_TYPE_E(%struct.Boxed* %right, NUM_TYPE)			NEWLINE\
-	%f.value.left  = call double @_GET_NUM_VALUE(%struct.Boxed* %left)		NEWLINE\
-	%f.value.right = call double @_GET_NUM_VALUE(%struct.Boxed* %right)		NEWLINE\
-	%f.res = fcmp fop double %f.value.left, %f.value.right				NEWLINE\
-	br label %end									NEWLINE\
-string.type:										NEWLINE\
-	call void @_DEFAULT_IF_NULL(%struct.Boxed* %left, STR_TYPE)			NEWLINE\
-	call void @_DEFAULT_IF_NULL(%struct.Boxed* %right, STR_TYPE)			NEWLINE\
-	call void @_CHECK_TYPE_E(%struct.Boxed* %right, STR_TYPE)			NEWLINE\
-	%left.str  = call i8* @_GET_STR_VALUE(%struct.Boxed* %left)			NEWLINE\
-	%right.str = call i8* @_GET_STR_VALUE(%struct.Boxed* %right)			NEWLINE\
-	%len.left  = call i32 @strlen(i8* %left)					NEWLINE\
-	%len.right = call i32 @strlen(i8* %right)					NEWLINE\
-	%s.res = icmp op i32 %len.left, %len.right					NEWLINE\
-	br label %end									NEWLINE\
-otherwise:										NEWLINE\
-	call void @_CHECK_TYPE_E(%struct.Boxed* %left, NUM_TYPE)			NEWLINE\
-	ret void									NEWLINE\
-end:											NEWLINE\
-	%bool = phi i1 [%f.res, %number.type], [%s.res, %string.type]			NEWLINE\
-	call void @_SET_BOOL_VALUE(%struct.Boxed* %res, i1 %bool)			NEWLINE\
-	ret void									NEWLINE\
-}											NEWLINE
+#define OVERLOADED_CMP(name, fop, op)	\
+define void @name(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {		NEWLINE\
+	%type.left = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %left)				NEWLINE\
+	switch TYPE_TYPE %type.left, label %otherwise [ NULL_TYPE, label %null.type		NEWLINE\
+	                                                NUM_TYPE,  label %number.type		NEWLINE\
+	                                                STR_TYPE,  label %string.type ]		NEWLINE\
+null.type:											NEWLINE\
+	%type.right = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %right)				NEWLINE\
+	switch TYPE_TYPE %type.right, label %otherwise [ NUM_TYPE,  label %number.type		NEWLINE\
+	                                                 STR_TYPE,  label %string.type ]	NEWLINE\
+number.type:											NEWLINE\
+	call void @_DEFAULT_IF_NULL(%struct.Boxed* %left, NUM_TYPE)				NEWLINE\
+	call void @_DEFAULT_IF_NULL(%struct.Boxed* %right, NUM_TYPE)				NEWLINE\
+	call void @_CHECK_TYPE_E(%struct.Boxed* %right, NUM_TYPE)				NEWLINE\
+	call void @_CHECK_TYPE_E(%struct.Boxed* %left, NUM_TYPE)				NEWLINE\
+	%f.value.left  = call double @_GET_NUM_VALUE(%struct.Boxed* %left)			NEWLINE\
+	%f.value.right = call double @_GET_NUM_VALUE(%struct.Boxed* %right)			NEWLINE\
+	%f.bool = fcmp fop double %f.value.left, %f.value.right					NEWLINE\
+	call void @_SET_BOOL_VALUE(%struct.Boxed* %res, i1 %f.bool)				NEWLINE\
+	ret void										NEWLINE\
+string.type:											NEWLINE\
+	call void @_DEFAULT_IF_NULL(%struct.Boxed* %left, STR_TYPE)				NEWLINE\
+	call void @_DEFAULT_IF_NULL(%struct.Boxed* %right, STR_TYPE)				NEWLINE\
+	call void @_CHECK_TYPE_E(%struct.Boxed* %left, STR_TYPE)				NEWLINE\
+	call void @_CHECK_TYPE_E(%struct.Boxed* %right, STR_TYPE)				NEWLINE\
+	%left.str  = call i8* @_GET_STR_VALUE(%struct.Boxed* %left)				NEWLINE\
+	%right.str = call i8* @_GET_STR_VALUE(%struct.Boxed* %right)				NEWLINE\
+	%strcmp    = call i32 @strcmp(i8* %left.str, i8* %right.str)				NEWLINE\
+	%s.bool    = icmp op i32 %strcmp, 0							NEWLINE\
+	call void @_SET_BOOL_VALUE(%struct.Boxed* %res, i1 %s.bool)				NEWLINE\
+	ret void										NEWLINE\
+otherwise:											NEWLINE\
+	call void @_CHECK_TYPE_E(%struct.Boxed* %left, NUM_TYPE)				NEWLINE\
+	call void @_CHECK_TYPE_E(%struct.Boxed* %right, NUM_TYPE)				NEWLINE\
+	ret void										NEWLINE\
+}												NEWLINE
 
-CMP_OP(EQ,  oeq, eq)
-CMP_OP(NEQ, one, ne)
-CMP_OP(GEQ, oge, uge)
-CMP_OP(LEQ, ole, sge)
-CMP_OP(LT,  olt, slt)
-CMP_OP(GT,  ogt, sgt)
+OVERLOADED_CMP(EQ, oeq, eq)
+OVERLOADED_CMP(NEQ, one, ne)
+OVERLOADED_CMP(GEQ, oge, sge)
+OVERLOADED_CMP(LEQ, ole, sle)
+OVERLOADED_CMP(LT, olt, slt)
+OVERLOADED_CMP(GT, ogt, sgt)
 
 #define BOOL_OP(name, op) 	\
 define void @name(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {	NEWLINE\
