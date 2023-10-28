@@ -73,7 +73,7 @@ define void @EQ(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right
 	%are.same = icmp eq TYPE_TYPE %type.left, %type.right
 	br i1 %are.same, label %yes.same, label %no.same
 yes.same:
-	call void @SAME_EQ(%struct.Boxed* %left, %struct.Boxed* %right)
+	call void @SAME_EQ(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right)
 	ret void
 no.same:
 	%is.left.str  = call i1 @_CHECK_TYPE(%struct.Boxed* %left, STR_TYPE)
@@ -101,7 +101,7 @@ define void @NEQ(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %righ
 	%are.same = icmp eq TYPE_TYPE %type.left, %type.right
 	br i1 %are.same, label %yes.same, label %no.same
 yes.same:
-	call void @SAME_NEQ(%struct.Boxed* %left, %struct.Boxed* %right)
+	call void @SAME_NEQ(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right)
 	ret void
 no.same:
 	%is.left.str  = call i1 @_CHECK_TYPE(%struct.Boxed* %left, STR_TYPE)
