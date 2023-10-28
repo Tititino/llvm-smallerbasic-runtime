@@ -59,12 +59,70 @@ otherwise:											NEWLINE\
 	ret void										NEWLINE\
 }												NEWLINE
 
-OVERLOADED_CMP(EQ, oeq, eq)
-OVERLOADED_CMP(NEQ, one, ne)
 OVERLOADED_CMP(GEQ, oge, sge)
 OVERLOADED_CMP(LEQ, ole, sle)
 OVERLOADED_CMP(LT, olt, slt)
 OVERLOADED_CMP(GT, ogt, sgt)
+
+OVERLOADED_CMP(SAME_EQ, oeq, eq)
+OVERLOADED_CMP(SAME_NEQ, one, ne)
+
+define void @EQ(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {		
+	%type.left  = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %left)				
+	%type.right = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %right)
+	%are.same = icmp eq TYPE_TYPE %type.left, %type.right
+	br i1 %are.same, label %yes.same, label %no.same
+yes.same:
+	call void @SAME_EQ(%struct.Boxed* %left, %struct.Boxed* %right)
+	ret void
+no.same:
+	%is.left.str  = call i1 @_CHECK_TYPE(%struct.Boxed* %left, STR_TYPE)
+	%is.left.num  = call i1 @_CHECK_TYPE(%struct.Boxed* %left, NUM_TYPE)
+	%is.right.str = call i1 @_CHECK_TYPE(%struct.Boxed* %right, STR_TYPE)
+	%is.right.num = call i1 @_CHECK_TYPE(%struct.Boxed* %right, NUM_TYPE)
+
+	%is.left.valid = or i1 %is.left.str, %is.left.num
+	%is.right.valid = or i1 %is.right.str, %is.right.num
+	%are.both.valid = and i1 %is.left.valid, %is.right.valid
+
+	br i1 %are.both.valid, label %yes.valid, label %no.valid
+yes.valid:
+	call void @_SET_BOOL_VALUE(%struct.Boxed* %res, FALSE)
+	ret void
+no.valid:
+	call void @_CHECK_TYPE_E(%struct.Boxed* %left, NUM_TYPE)				
+	call void @_CHECK_TYPE_E(%struct.Boxed* %right, NUM_TYPE)				
+	ret void										
+}												
+
+define void @NEQ(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {		
+	%type.left  = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %left)				
+	%type.right = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %right)
+	%are.same = icmp eq TYPE_TYPE %type.left, %type.right
+	br i1 %are.same, label %yes.same, label %no.same
+yes.same:
+	call void @SAME_NEQ(%struct.Boxed* %left, %struct.Boxed* %right)
+	ret void
+no.same:
+	%is.left.str  = call i1 @_CHECK_TYPE(%struct.Boxed* %left, STR_TYPE)
+	%is.left.num  = call i1 @_CHECK_TYPE(%struct.Boxed* %left, NUM_TYPE)
+	%is.right.str = call i1 @_CHECK_TYPE(%struct.Boxed* %right, STR_TYPE)
+	%is.right.num = call i1 @_CHECK_TYPE(%struct.Boxed* %right, NUM_TYPE)
+
+	%is.left.valid = or i1 %is.left.str, %is.left.num
+	%is.right.valid = or i1 %is.right.str, %is.right.num
+	%are.both.valid = and i1 %is.left.valid, %is.right.valid
+
+	br i1 %are.both.valid, label %yes.valid, label %no.valid
+yes.valid:
+	call void @_SET_BOOL_VALUE(%struct.Boxed* %res, TRUE)
+	ret void
+no.valid:
+	call void @_CHECK_TYPE_E(%struct.Boxed* %left, NUM_TYPE)				
+	call void @_CHECK_TYPE_E(%struct.Boxed* %right, NUM_TYPE)				
+	ret void										
+}												
+
 
 #define BOOL_OP(name, op) 	\
 define void @name(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {	NEWLINE\

@@ -40,7 +40,7 @@ define void @name(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %rig
 
 ARITH_OP(MINUS, fsub)
 ARITH_OP(MULT, fmul)
-ARITH_OP(PLUS, fadd)
+ARITH_OP(NUM_PLUS, fadd)
 
 define void @UNARY_MINUS(%struct.Boxed* %res, %struct.Boxed* %value) {
 	call void @_DEFAULT_IF_NULL(%struct.Boxed* %value, NUM_TYPE)
@@ -51,7 +51,7 @@ define void @UNARY_MINUS(%struct.Boxed* %res, %struct.Boxed* %value) {
 	ret void
 }
 
-define void @OVERLOADED_PLUS(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {	
+define void @PLUS(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {	
 	%type.left = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %left)				
 	switch TYPE_TYPE %type.left, label %otherwise [ NULL_TYPE, label %null.type
 	                                                NUM_TYPE,  label %number.type		
@@ -61,7 +61,7 @@ null.type:
 	switch TYPE_TYPE %type.right, label %otherwise [ NUM_TYPE,  label %number.type
 	                                                 STR_TYPE,  label %string.type ]	
 number.type:								
-	call void @PLUS(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right)
+	call void @NUM_PLUS(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right)
 	ret void
 string.type:						
 	call void @CONCAT(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right)
