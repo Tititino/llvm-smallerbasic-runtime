@@ -11,7 +11,6 @@
 
 #define STRING_INPUT_BUF_SIZE	100
 
-
 #define TRUE	i1 1
 #define FALSE	i1 0
 
@@ -25,13 +24,6 @@ declare i8* @strcat(i8*, i8*)
 declare i32 @strcmp(i8*, i8*)
 declare i32 @printf(i8* noalias nocapture, ...)
 declare ptr @fgets(ptr noundef, i32 noundef, ptr noundef) 
-
-#define NEW_BOX_NO_INIT(name)	\
-%name = alloca %struct.Boxed					NEWLINE
-
-#define NEW_BOX(name, val, type)	\
-%name = alloca %struct.Boxed					NEWLINE\
-call void @_SET_##type##_VALUE(%struct.Boxed* %name, val)	NEWLINE
 
 %struct.Boxed = type {
 	TYPE_TYPE,	

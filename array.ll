@@ -3,15 +3,18 @@
 ; Arrays
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-%struct.Array = type {
+%struct.Array = type {	
 	i32,
 	%struct.Boxed*
 }
 
+; sizeof(Boxed)
 @box.size     = constant i32 ptrtoint (%struct.Boxed* getelementptr (%struct.Boxed, %struct.Boxed* null, i32 1) to i32)
-@box.ptr.size = constant i32 ptrtoint (%struct.Boxed** getelementptr (%struct.Boxed*, %struct.Boxed** null, i32 1) to i32)
+; sizoef(Array)
 @array.size   = constant i32 ptrtoint (%struct.Array* getelementptr (%struct.Array, %struct.Array* null, i32 1) to i32)
 
+; init a Boxed valuue to an empty array
+; @param this the struct.Boxed to be initialized to an empty array
 define void @_EMPTY_ARRAY(%struct.Boxed* %this) {
 	%type.ptr  = getelementptr %struct.Boxed, %struct.Boxed* %this, i32 0, i32 0	
 	%value.ptr = getelementptr %struct.Boxed, %struct.Boxed* %this, i32 0, i32 1
@@ -20,12 +23,12 @@ define void @_EMPTY_ARRAY(%struct.Boxed* %this) {
 	%empty.arr.bytes = call i8* @malloc(i32 %array.size)					; allocate a <size> number of bytes
 	%empty.arr       = bitcast i8* %empty.arr.bytes to %struct.Array*			; cast the pointer to bytes to one to an array
 
-	%box.size         = load i32, i32* @box.size
-	%empty.cont.bytes = call i8* @malloc(i32 %box.size)
-	%empty.cont       = bitcast i8* %empty.cont.bytes to %struct.Boxed*
+	%box.size         = load i32, i32* @box.size						; TODO: check if i can remove this allocation
+	%empty.cont.bytes = call i8* @malloc(i32 %box.size)					; allocate a box
+	%empty.cont       = bitcast i8* %empty.cont.bytes to %struct.Boxed*			; 
 
 	call void @_SET_CAPACITY(%struct.Array* %empty.arr, i32 0)
-	call void @_SET_CONTENTS(%struct.Array* %empty.arr, %struct.Boxed* %empty.cont)
+	call void @_SET_CONTENTS(%struct.Array* %empty.arr, %struct.Boxed* %empty.cont)		; init the array to a single box, may change to null in the future
 
 	store ARRAY_TYPE, TYPE_TYPE* %type.ptr
 
@@ -35,7 +38,7 @@ define void @_EMPTY_ARRAY(%struct.Boxed* %this) {
 	ret void
 }
 
-; DO NOT USE THESE FOUR FUNCTIONS OUTSIDE OF THIS FILE
+; These five functions are intended to be used inside this file
 define i32 @_GET_CAPACITY(%struct.Array* %this) {
 	%capacity.ptr  = getelementptr %struct.Array, %struct.Array* %this, i32 0, i32 0
 	%capacity = load i32, i32* %capacity.ptr
@@ -61,15 +64,20 @@ define void @_SET_CONTENTS(%struct.Array* %this, %struct.Boxed* %new) {
 }
 
 define %struct.Array* @_GET_ARRAY(%struct.Boxed* %this) {
-	call void @_DEFAULT_IF_NULL(%struct.Boxed* %this, ARRAY_TYPE)				
-	call void @_CHECK_TYPE_E(%struct.Boxed* %this, ARRAY_TYPE)
-	%arr.ptr = getelementptr %struct.Boxed, %struct.Boxed* %this, i32 0, i32 1
-	%i.arr = load i64, i64* %arr.ptr
+	call void @_DEFAULT_IF_NULL(%struct.Boxed* %this, ARRAY_TYPE)			; if this is null, the default it to a boxed array
+	call void @_CHECK_TYPE_E(%struct.Boxed* %this, ARRAY_TYPE)			; else if the type of this is not ARRAY_TYPE throw an exception
+	%arr.ptr = getelementptr %struct.Boxed, %struct.Boxed* %this, i32 0, i32 1	 
+	%i.arr = load i64, i64* %arr.ptr						
 
 	%arr = inttoptr i64 %i.arr to %struct.Array*					
 	ret %struct.Array* %arr
 }
 
+; get the index th element out of this boxed array.
+; if the array is smaller than the index the contents are expanded
+; @param this	the box, must be NULL or an array box or else an error is thrown
+; @param index	the index, must be NULL or of NUMBER type
+; @returns the index-th element of this
 define %struct.Boxed* @_GET_ARRAY_ELEMENT(%struct.Boxed* %this, %struct.Boxed* %index) {
 	call void @_DEFAULT_IF_NULL(%struct.Boxed* %this, ARRAY_TYPE)		; if (this is null) then default(this)	
 	call void @_CHECK_TYPE_E(%struct.Boxed* %this, ARRAY_TYPE)		; assert(this.type == ARRAY)
@@ -88,15 +96,15 @@ true:
 	%struct.ptr = getelementptr %struct.Boxed, %struct.Boxed* %contents, i32 %i.index
 	ret %struct.Boxed* %struct.ptr
 false:
-	%i8.ptr.arr = bitcast %struct.Boxed* %contents to i8*
+	%i8.ptr.arr = bitcast %struct.Boxed* %contents to i8*			; cast the pointer to a byte pointer
 
-	%box.size = load i32, i32* @box.size
-	%new.number.of.elements = add i32 %i.index, 1
-	%new.size = mul i32 %box.size, %new.number.of.elements
+	%box.size = load i32, i32* @box.size					; sizeof(Boxed)
+	%new.number.of.elements = add i32 %i.index, 1				; new-capacity = index + 1
+	%new.size = mul i32 %box.size, %new.number.of.elements			; bytes-to-alloc = new-capacity * siezeof(Boxed)
 
-	%new.contents.bytes = call i8* @realloc(i8* %i8.ptr.arr, i32 %new.size)
+	%new.contents.bytes = call i8* @realloc(i8* %i8.ptr.arr, i32 %new.size)	; realloc
 
-	%new.contents = bitcast i8* %new.contents.bytes to %struct.Boxed**
+	%new.contents = bitcast i8* %new.contents.bytes to %struct.Boxed*	; cast back to a [Boxed]
 	call void @_SET_CAPACITY(%struct.Array* %array, i32 %new.number.of.elements)
 	call void @_SET_CONTENTS(%struct.Array* %array, %struct.Boxed* %new.contents)
 	%ret = call %struct.Boxed* @_GET_ARRAY_ELEMENT(%struct.Boxed* %this, %struct.Boxed* %index)
