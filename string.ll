@@ -38,7 +38,7 @@ define void @CONCAT(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %r
 	%len.right = call i32 @strlen(i8* %right.string)
 
 	%len.new.0 = add i32 %len.left, %len.right
-	%len.new = add i32 %len.new.0, 1
+	%len.new = add i32 %len.new.0, 1			; the new length is length(`left') + `length(`right') + 1 (null terminating byte)
 
 	%new.string = call i8* @malloc(i32 %len.new)		; memory leak
 

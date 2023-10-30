@@ -5,6 +5,7 @@
 
 ; THESE FUNCTIONS DO NOT CHECK IF THE VALUE IS OF THE RIGHT KIND
 ; IT IS THE CALEE RESPONSABILITY
+; number getter
 define double @_GET_NUM_VALUE(%struct.Boxed* %value) {
 	%value.ptr = getelementptr %struct.Boxed, %struct.Boxed* %value, i32 0, i32 1	; extract the pointer to the number from the struct
 	%i.value   = load i64, i64* %value.ptr						; extract the number from the pointer
@@ -13,6 +14,7 @@ define double @_GET_NUM_VALUE(%struct.Boxed* %value) {
 	ret double %f.value
 }
 
+; number setter
 define void @_SET_NUM_VALUE(%struct.Boxed* %self, double %value) {
 	%type.ptr  = getelementptr %struct.Boxed, %struct.Boxed* %self, i32 0, i32 0	; extract the pointer to the bool from the struct
 	%value.ptr = getelementptr %struct.Boxed, %struct.Boxed* %self, i32 0, i32 1	; extract the pointer to the bool from the struct
@@ -25,6 +27,7 @@ define void @_SET_NUM_VALUE(%struct.Boxed* %self, double %value) {
 	ret void
 }
 
+; `left' and `right' must be numbers, `left' and `right' may be null
 #define ARITH_OP(name, op)		\
 define void @name(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {	NEWLINE\
 	call void @_DEFAULT_IF_NULL(%struct.Boxed* %left, NUM_TYPE)			NEWLINE\
@@ -42,6 +45,7 @@ ARITH_OP(MINUS, fsub)
 ARITH_OP(MULT, fmul)
 ARITH_OP(NUM_PLUS, fadd)
 
+; `value' must be a number, `value' may be null
 define void @UNARY_MINUS(%struct.Boxed* %res, %struct.Boxed* %value) {
 	call void @_DEFAULT_IF_NULL(%struct.Boxed* %value, NUM_TYPE)
 	call void @_CHECK_TYPE_E(%struct.Boxed* %value, NUM_TYPE)
@@ -51,6 +55,9 @@ define void @UNARY_MINUS(%struct.Boxed* %res, %struct.Boxed* %value) {
 	ret void
 }
 
+; an overloaded version of plus that calls `@CONCAT' or `@NUM_PLUS' based on the types of the operands.
+; if the first argument is null it checks the type of the second
+; if the second is also null it throw an exception (TODO: maybe make it call `@NUM_PLUS')
 define void @PLUS(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {	
 	%type.left = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %left)				
 	switch TYPE_TYPE %type.left, label %otherwise [ NULL_TYPE, label %null.type
@@ -72,6 +79,7 @@ otherwise:
 	ret void								
 }
 
+; `left' and `right' must be numbers, `left' and `right' may be null, `right' must not be zero
 define void @DIV(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {	
 	call void @_DEFAULT_IF_NULL(%struct.Boxed* %left, NUM_TYPE)				
 	call void @_DEFAULT_IF_NULL(%struct.Boxed* %right, NUM_TYPE)			
@@ -85,6 +93,7 @@ define void @DIV(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %righ
 	ret void							
 }								
 
+; `value' must be a number, `value' may be null
 define i64 @_FLOOR(%struct.Boxed* %value) {
 	call void @_DEFAULT_IF_NULL(%struct.Boxed* %value, NUM_TYPE)				
 	call void @_CHECK_TYPE_E(%struct.Boxed* %value, NUM_TYPE)

@@ -22,6 +22,12 @@ define void @_SET_BOOL_VALUE(%struct.Boxed* %self, i1 %value) {
 	ret void
 }
 
+; Create a function named `name', that compares two numbers using `fop' or compares two string using
+; `op' (strcmp(str1, str), 0) otherwise.
+; Both operands may be null, but must be of the same type.
+; @param res 	the result pointer
+; @param left 	the left operand
+; @param right 	the right operand
 #define OVERLOADED_CMP(name, fop, op)	\
 define void @name(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {		NEWLINE\
 	%type.left = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %left)				NEWLINE\
@@ -67,6 +73,9 @@ OVERLOADED_CMP(GT, ogt, sgt)
 OVERLOADED_CMP(SAME_EQ, oeq, eq)
 OVERLOADED_CMP(SAME_NEQ, one, ne)
 
+; Equality (and inequality) is defined separaly because it may accept operands of different types.
+; In every other way it is the same as OVERLOADED_CMP.
+; TODO: make it work with null values.
 define void @EQ(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {		
 	%type.left  = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %left)				
 	%type.right = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %right)
@@ -123,7 +132,7 @@ no.valid:
 	ret void										
 }												
 
-
+; Arguments may be null, arguments must be booleans
 #define BOOL_OP(name, op) 	\
 define void @name(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {	NEWLINE\
 	call void @_DEFAULT_IF_NULL(%struct.Boxed* %left, BOOL_TYPE)			NEWLINE\

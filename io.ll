@@ -9,6 +9,7 @@
 
 @stdin = external global ptr, align 8
 
+; Read a newline terminated line from stdin, the line must have less than 100 chars
 define void @IO.ReadLine(%struct.Boxed* %this) {
 	%new.string = call i8* @malloc(i32 STRING_INPUT_BUF_SIZE)	; memory leak
 
@@ -23,6 +24,9 @@ define void @IO.ReadLine(%struct.Boxed* %this) {
 	ret void
 }
 
+; Print a box to stdout.
+; the type must not be an array.
+; `value' must not be a NULL (TODO: maybe add a specific clause for printing null)
 define void @IO.WriteLine(%struct.Boxed* %null, %struct.Boxed* %value) {
 	%type = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %value)
 	switch TYPE_TYPE %type, label %otherwise [ NUM_TYPE, label %number.type

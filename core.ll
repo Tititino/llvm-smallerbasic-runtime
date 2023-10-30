@@ -9,6 +9,7 @@
 #define BOOL_TYPE	i3 3
 #define ARRAY_TYPE	i3 4
 
+; the maximum size of a input string
 #define STRING_INPUT_BUF_SIZE	100
 
 #define TRUE	i1 1
@@ -16,26 +17,33 @@
 
 ; needed external functions
 declare i8* @malloc(i32)
-declare i8* @realloc(i8*, i32)
-declare void @abort()
-declare i32 @strlen(i8*)
+declare i8* @realloc(i8*, i32)	; array reallocation
+declare void @abort()		; interrupt execution in case of errors
+declare i32 @strlen(i8*)	
 declare i8* @strcpy(i8*, i8*)
 declare i8* @strcat(i8*, i8*)
 declare i32 @strcmp(i8*, i8*)
-declare i32 @printf(i8* noalias nocapture, ...)
-declare ptr @fgets(ptr noundef, i32 noundef, ptr noundef) 
+declare i32 @printf(i8* noalias nocapture, ...)			; outut
+declare ptr @fgets(ptr noundef, i32 noundef, ptr noundef) 	; input
 
+; a box holds a type and a value, the value is i64 to contain a double
+; if the type is 0 or the box is considered a null value.
+; In all other comments, if it is not explicitly specified, every occurrence of null is to be interpreted as a box with type 0.
 %struct.Boxed = type {
-	TYPE_TYPE,	
-	i64
+	TYPE_TYPE,	; type
+	i64		; value
 }
 
+; Get the type of a box, must be non-null
 define TYPE_TYPE @_GET_TYPE(%struct.Boxed* %this) {
 	%struct.type.ptr = getelementptr %struct.Boxed, %struct.Boxed* %this, i32 0, i32 0
 	%type            = load TYPE_TYPE, TYPE_TYPE* %struct.type.ptr
 	ret TYPE_TYPE %type
 }
 
+; Copy a box into another
+; array copy is not supported
+; from must be non null
 define void @_COPY(%struct.Boxed* %to, %struct.Boxed* %from) {
 	%type = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %from)		
 	switch TYPE_TYPE %type, label %otherwise [ NUM_TYPE,   label %number.type
@@ -67,6 +75,7 @@ end:
 	ret void
 }											
 
+; assign a default value to a box based on the type given
 define void @_DEFAULT_IF_NULL(%struct.Boxed* %this, TYPE_TYPE %type) {
 	%value.type = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %this)
 	%bool = icmp eq TYPE_TYPE %value.type, 0

@@ -13,12 +13,14 @@
 
 @line.number = global i32 0
 
+; return a boolean saying whether a box has type `expected' or not.
 define i1 @_CHECK_TYPE(%struct.Boxed* %value, TYPE_TYPE %expected) {
 	%type            = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %value)
 	%ret             = icmp eq TYPE_TYPE %type, %expected
 	ret i1 %ret
 }
 
+; return the string represetation of a type.
 define i8* @_GET_TYPE_REPR(TYPE_TYPE %type) {
 	switch TYPE_TYPE %type, label %otherwise [ NUM_TYPE, label %number.type
 	                	                   STR_TYPE, label %str.type
@@ -48,6 +50,7 @@ print:
 	ret i8* %msg
 }
 
+; throw a generic error
 define void @_UNKNOWN_ERROR() {
 	%line = load i32, i32* @line.number 
 	call i32 (i8*, ...) @printf(i8* getelementptr([47 x i8], [47 x i8]* @unknown.error, i32 0, i32 0), i32 %line)
@@ -55,6 +58,7 @@ define void @_UNKNOWN_ERROR() {
 	ret void	
 }
 
+; throw a zero division error if `value' is zero
 define void @_CHECK_ZERO_DIV_E(%struct.Boxed* %value) {
 	%num = call double @_GET_NUM_VALUE(%struct.Boxed* %value)
 	%is.zero = fcmp oeq double %num, 0.0
@@ -68,6 +72,7 @@ false:
 	ret void
 }
 
+; throw a type error if `value''s type is different from `expected'
 define void @_CHECK_TYPE_E(%struct.Boxed* %value, TYPE_TYPE %expected) {
 	%type            = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %value)
 	%are.equal       = icmp eq TYPE_TYPE %type, %expected
@@ -83,6 +88,7 @@ end:
 	ret void
 }
 
+; throw a negative index error if `index' is less than zero
 @negative.index.msg = constant [57 x i8] c"*** Runtime exception: %d is a negative index (line %d)\0A\00"
 define void @_CHECK_POSITIVE_INDEX_E(i32 %index) {
 	%is.negative = icmp slt i32 %index, 0
@@ -96,6 +102,7 @@ false:
 	ret void
 }
 
+; throw an array copy error if the user is trying to copy an array
 @array.copy.msg = constant [75 x i8] c"*** Runtime exception: array copy (<arr> = <arr>) not supported (line %d)\0A\00"
 define void @_ARRAY_COPY_E() {
 	%line = load i32, i32* @line.number 
@@ -104,6 +111,7 @@ define void @_ARRAY_COPY_E() {
 	ret void
 }
 
+; throw an array print error if the user is trying to print an array
 @array.print.msg = constant [63 x i8] c"*** Runtime exception: array printing not supported (line %d)\0A\00"
 define void @_ARRAY_PRINT_E() {
 	%line = load i32, i32* @line.number 
