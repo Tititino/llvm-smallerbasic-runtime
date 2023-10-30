@@ -75,8 +75,8 @@ string.type:
 	call void @CONCAT(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right)
 	ret void
 otherwise:				
-	call void @_CHECK_TYPE_E(%struct.Boxed* %left, NUM_TYPE)			
-	call void @_CHECK_TYPE_E(%struct.Boxed* %right, NUM_TYPE)			
+	call void @_NUM_OR_STR_E(%struct.Boxed* %left)
+	call void @_NUM_OR_STR_E(%struct.Boxed* %right)
 	ret void								
 }
 

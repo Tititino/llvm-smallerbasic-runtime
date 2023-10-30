@@ -120,4 +120,20 @@ define void @_ARRAY_PRINT_E() {
 	ret void
 }
 
+; throw an error if the input has not type STRING or NUM
+@str.or.num.msg = constant [93 x i8] c"*** Runtime exception: expected a value of type NUMBER or STRING, instead got %s at line %d\0A\00"
+define void @_NUM_OR_STR_E(%struct.Boxed* %this) {
+	%type = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %this)
+	switch TYPE_TYPE %type, label %problem[ NUM_TYPE, label %no.problem
+	                	                STR_TYPE, label %no.problem ]
+problem:
+	%line = load i32, i32* @line.number 
+	%type.repr = call i8* @_GET_TYPE_REPR(TYPE_TYPE %type)
+	call i32 (i8*, ...) @printf(i8* getelementptr([93 x i8], [93 x i8]* @str.or.num.msg, i32 0, i32 0), i8* %type.repr, i32 %line)		
+	call void @abort()
+	ret void
+no.problem:
+	ret void
+}
+
 ;-04---- END ERROR.LL ------------------------------------------------------------------------------

@@ -99,8 +99,8 @@ yes.valid:
 	call void @_SET_BOOL_VALUE(%struct.Boxed* %res, FALSE)
 	ret void
 no.valid:
-	call void @_CHECK_TYPE_E(%struct.Boxed* %left, NUM_TYPE)				
-	call void @_CHECK_TYPE_E(%struct.Boxed* %right, NUM_TYPE)				
+	call void @_NUM_OR_STR_E(%struct.Boxed* %left)
+	call void @_NUM_OR_STR_E(%struct.Boxed* %right)
 	ret void										
 }												
 
@@ -127,8 +127,8 @@ yes.valid:
 	call void @_SET_BOOL_VALUE(%struct.Boxed* %res, TRUE)
 	ret void
 no.valid:
-	call void @_CHECK_TYPE_E(%struct.Boxed* %left, NUM_TYPE)				
-	call void @_CHECK_TYPE_E(%struct.Boxed* %right, NUM_TYPE)				
+	call void @_NUM_OR_STR_E(%struct.Boxed* %left)
+	call void @_NUM_OR_STR_E(%struct.Boxed* %right)
 	ret void										
 }												
 
