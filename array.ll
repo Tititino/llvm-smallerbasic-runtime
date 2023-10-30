@@ -23,12 +23,8 @@ define void @_EMPTY_ARRAY(%struct.Boxed* %this) {
 	%empty.arr.bytes = call i8* @malloc(i32 %array.size)					; allocate a <size> number of bytes
 	%empty.arr       = bitcast i8* %empty.arr.bytes to %struct.Array*			; cast the pointer to bytes to one to an array
 
-	%box.size         = load i32, i32* @box.size						; TODO: check if i can remove this allocation
-	%empty.cont.bytes = call i8* @malloc(i32 %box.size)					; allocate a box
-	%empty.cont       = bitcast i8* %empty.cont.bytes to %struct.Boxed*			; 
-
 	call void @_SET_CAPACITY(%struct.Array* %empty.arr, i32 0)
-	call void @_SET_CONTENTS(%struct.Array* %empty.arr, %struct.Boxed* %empty.cont)		; init the array to a single box, may change to null in the future
+	call void @_SET_CONTENTS(%struct.Array* %empty.arr, %struct.Boxed* null)		; init to null the contetns
 
 	store ARRAY_TYPE, TYPE_TYPE* %type.ptr
 
@@ -102,7 +98,7 @@ false:
 	%new.number.of.elements = add i32 %i.index, 1				; new-capacity = index + 1
 	%new.size = mul i32 %box.size, %new.number.of.elements			; bytes-to-alloc = new-capacity * siezeof(Boxed)
 
-	%new.contents.bytes = call i8* @realloc(i8* %i8.ptr.arr, i32 %new.size)	; realloc
+	%new.contents.bytes = call i8* @realloc(i8* %i8.ptr.arr, i32 %new.size)	; realloc, this may cause bugs since the memory is uninitialized, and the use may access a bad-box
 
 	%new.contents = bitcast i8* %new.contents.bytes to %struct.Boxed*	; cast back to a [Boxed]
 	call void @_SET_CAPACITY(%struct.Array* %array, i32 %new.number.of.elements)
