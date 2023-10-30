@@ -8,11 +8,11 @@ out/out.s: out/out.ll
 
 out/out.ll : out/runtime.ll main.ll
 	mkdir -p out/
-	cat out/runtime.ll separator.txt main.ll  > out/out.ll
+	cat out/runtime.ll main.ll  > out/out.ll
 
 out/runtime.ll: ${RUNTIME}
 	mkdir -p out/
-	cat ${RUNTIME} | ${CPP} -xc -P -E - | sed 's/NEWLINE/\n/g' > out/runtime.ll
+	cat ${RUNTIME} separator.txt | ${CPP} -xc -P -E - | sed 's/NEWLINE/\n/g' > out/runtime.ll
 
 out/out: out/out.s
 	mkdir -p out/
