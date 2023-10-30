@@ -41,6 +41,12 @@ define TYPE_TYPE @_GET_TYPE(%struct.Boxed* %this) {
 	ret TYPE_TYPE %type
 }
 
+define void @_SET_TYPE(%struct.Boxed* %this, TYPE_TYPE %type) {
+	%struct.type.ptr = getelementptr %struct.Boxed, %struct.Boxed* %this, i32 0, i32 0
+	store TYPE_TYPE %type, TYPE_TYPE* %struct.type.ptr
+	ret void
+}
+
 ; Copy a box into another
 ; array copy is not supported
 ; from must be non null

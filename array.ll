@@ -92,19 +92,45 @@ true:
 	%struct.ptr = getelementptr %struct.Boxed, %struct.Boxed* %contents, i32 %i.index
 	ret %struct.Boxed* %struct.ptr
 false:
-	%i8.ptr.arr = bitcast %struct.Boxed* %contents to i8*			; cast the pointer to a byte pointer
+	call void @_EXPAND(%struct.Array* %array, i32 %i.index)
+	%ret = call %struct.Boxed* @_GET_ARRAY_ELEMENT(%struct.Boxed* %this, %struct.Boxed* %index)
+	ret %struct.Boxed* %ret
+}
+
+define void @_EXPAND(%struct.Array* %this, i32 %index) {
+	%contents.ptr = call %struct.Boxed* @_GET_CONTENTS(%struct.Array* %this)
+	%old.capacity = call i32 @_GET_CAPACITY(%struct.Array* %this)
+
+	%i8.ptr.arr = bitcast %struct.Boxed* %contents.ptr to i8*		; cast the pointer to a byte pointer
 
 	%box.size = load i32, i32* @box.size					; sizeof(Boxed)
-	%new.number.of.elements = add i32 %i.index, 1				; new-capacity = index + 1
+	%new.number.of.elements = add i32 %index, 1				; new-capacity = index + 1
 	%new.size = mul i32 %box.size, %new.number.of.elements			; bytes-to-alloc = new-capacity * siezeof(Boxed)
 
 	%new.contents.bytes = call i8* @realloc(i8* %i8.ptr.arr, i32 %new.size)	; realloc, this may cause bugs since the memory is uninitialized, and the use may access a bad-box
 
 	%new.contents = bitcast i8* %new.contents.bytes to %struct.Boxed*	; cast back to a [Boxed]
-	call void @_SET_CAPACITY(%struct.Array* %array, i32 %new.number.of.elements)
-	call void @_SET_CONTENTS(%struct.Array* %array, %struct.Boxed* %new.contents)
-	%ret = call %struct.Boxed* @_GET_ARRAY_ELEMENT(%struct.Boxed* %this, %struct.Boxed* %index)
-	ret %struct.Boxed* %ret
+
+	%i = alloca i32								; i = old-capacity
+	store i32 %old.capacity, i32* %i
+	br label %loop
+check:
+	%old.i.0 = load i32, i32* %i
+	%is.bigger = icmp sge i32 %old.i.0, %index				; if (i >= index) break
+	br i1 %is.bigger, label %end, label %loop
+loop:
+	%old.i.1 = load i32, i32* %i
+	%struct.ptr = getelementptr %struct.Boxed, %struct.Boxed* %new.contents, i32 %old.i.1	; arr[i]
+	call void @_SET_TYPE(%struct.Boxed* %struct.ptr, NULL_TYPE)			; box[type] = NULL
+
+	%old.i.2 = add i32 %old.i.1, 1						; i++
+	store i32 %old.i.2, i32* %i
+	br label %check								; jump check
+end:
+
+	call void @_SET_CAPACITY(%struct.Array* %this, i32 %new.number.of.elements)
+	call void @_SET_CONTENTS(%struct.Array* %this, %struct.Boxed* %new.contents)
+	ret void
 }
 
 ;-07---- END ARRAY.LL ------------------------------------------------------------------------------

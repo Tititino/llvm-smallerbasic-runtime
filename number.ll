@@ -58,6 +58,7 @@ define void @UNARY_MINUS(%struct.Boxed* %res, %struct.Boxed* %value) {
 ; an overloaded version of plus that calls `@CONCAT' or `@NUM_PLUS' based on the types of the operands.
 ; if the first argument is null it checks the type of the second
 ; if the second is also null it throw an exception (TODO: maybe make it call `@NUM_PLUS')
+; Fix the dealing with nulls and numbers
 define void @PLUS(%struct.Boxed* %res, %struct.Boxed* %left, %struct.Boxed* %right) {	
 	%type.left = call TYPE_TYPE @_GET_TYPE(%struct.Boxed* %left)				
 	switch TYPE_TYPE %type.left, label %otherwise [ NULL_TYPE, label %null.type

@@ -11,6 +11,7 @@ DECLARE_MATH_EXT_FUNC(cos)
 DECLARE_MATH_EXT_FUNC(sin)
 DECLARE_MATH_EXT_FUNC(log)
 DECLARE_MATH_EXT_FUNC(sqrt)
+DECLARE_MATH_EXT_FUNC(floor)
 
 ; call a specific imported math function on a box
 ; the box must be a number, but may be null
@@ -28,5 +29,6 @@ MATH_FUNC(Cos, cos)
 MATH_FUNC(Sin, sin)
 MATH_FUNC(Sqrt, sqrt)
 MATH_FUNC(Log, log)
+MATH_FUNC(Floor, floor)
 
 ;-05---- END MATH.LL -------------------------------------------------------------------------------
