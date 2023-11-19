@@ -40,7 +40,7 @@ Arrays are represented by a struct called `%struct.Array`.
 This has two fields: a capacity and the array of `%struct.Boxed*`.
 
 ## Line numbers
-Error messages thrown by `error.ll` reference the original SmallerBasic source line number, this is achieved using a global variable `@line` updated during compilation.
+Error messages thrown by `error.ll` reference the original SmallerBasic source line number, this is achieved using a global variable `@line` and a series of `store`s threaded in the LLVM IR during compilation.
 
 ## Problems
 `@malloc` and `@realloc` are used without gc.
